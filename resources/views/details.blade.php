@@ -1,0 +1,188 @@
+@extends('layout')
+
+@section('main-content')
+    <div class="row">
+        <!-- Product Image Section -->
+        <div class="col-md-6 product-image">
+            <img src="https://via.placeholder.com/600" alt="{{ $product->name }}">
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="col-md-6">
+            <h2 class="product-title">{{ $product->name }}</h2>
+            <p class="product-price">৳{{ number_format($product->price, 2) }}</p>
+            <p class="text-muted">SKU: #{{ $product->slug }}</p>
+
+            <!-- Purchase Options -->
+            <h5>Select type of purchase:</h5>
+            <div class="purchase-option active">
+                <input type="radio" id="buy-now-option" name="purchase-type" value="buy-now" checked>
+                <label for="buy-now-option" class="d-flex align-items-center">
+                    <i class="bi bi-cart"></i> Buy Now
+                </label>
+                <div class="d-flex align-items-center mb-3 mt-2 quantity-container" id="quantity-container">
+                    <label for="quantity" class="me-3">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" class="form-control quantity" value="1"
+                        min="1">
+                </div>
+            </div>
+
+            @if ($product->is_subscribable)
+                <div class="purchase-option">
+                    <input type="radio" id="schedule-buy-option" name="purchase-type" value="schedule-buy">
+                    <label for="schedule-buy-option" class="d-flex align-items-center">
+                        <i class="bi bi-calendar4-week"></i> Schedule Buy
+                    </label>
+                    <div class="schedule-select mt-2" style="display: none;">
+                        <label for="schedule-frequency" class="form-label">Choose frequency:</label>
+                        <select id="schedule-frequency" class="form-select">
+
+                            @if ($product->is_subscribable)
+                                @if ($product->schedule_type === 'monthly')
+                                    @foreach (json_decode($product->schedule, true) as $schedule)
+                                        <option value="{{ $schedule['interval'] }}-month">
+                                            Every {{ $schedule['interval'] }} month (Day {{ $schedule['day'] }})
+                                        </option>
+                                    @endforeach
+                                    {{-- <option value="1-month">Every 1 month</option>
+                                        <option value="2-months">Every 2 months</option>
+                                        <option value="6-months">Every 6 months</option> --}}
+                                @elseif ($product->schedule_type === 'days')
+                                    @foreach (json_decode($product->schedule, true) as $schedule)
+                                        <option value="{{ $schedule['interval'] }}-days">
+                                            Every {{ $schedule['interval'] }} day(s) (Day {{ $schedule['day'] }})
+                                        </option>
+                                    @endforeach
+                                @endif
+                            @endif
+                        </select>
+                        <div class="d-flex align-items-center mb-3 mt-2 quantity-container">
+                            <label for="schedule-quantity" class="me-3">Quantity:</label>
+                            <input type="number" id="schedule-quantity" name="schedule-quantity"
+                                class="form-control quantity" value="1" min="1">
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Bulk One-Time Options -->
+            @if ($product->is_bundle)
+                <div class="purchase-option">
+                    <input type="radio" id="bulk-option" name="purchase-type" value="bulk">
+                    <label for="bulk-option" class="d-flex align-items-center">
+                        <i class="bi bi-box"></i> Bulk One-Time Purchase
+                    </label>
+                    @php
+                        // Sample bundle_details data (you can replace it with your actual product data)
+                        $bundleDetails = json_decode($product->bundle_details);
+                    @endphp
+
+                    @if ($bundleDetails)
+                        <div class="bulk-options mt-2" style="display: none;">
+                            @foreach ($bundleDetails as $index => $bundle)
+                                @php
+                                    // Calculate the total original price for the bundle
+                                    $totalOriginalPrice = $bundle->product_price * $bundle->quantity;
+
+                                    // For percentage discounts, calculate the amount saved
+                                    if ($bundle->type == 'percentage') {
+                                        $percentageSaved = $bundle->discount_amount; // e.g. 10% saved
+                                        $savings = $totalOriginalPrice - $bundle->after_discount;
+                                    } elseif ($bundle->type == 'fixed') {
+                                        // For fixed discounts, calculate the amount saved directly
+                                        $savings = $bundle->discount_amount * $bundle->quantity;
+                                        $percentageSaved = round(($savings / $totalOriginalPrice) * 100); // Calculate percentage saved for display
+                                    }
+                                @endphp
+                                <div class="bulk-option-card">
+                                    <input type="radio" id="bulk-{{ $index + 1 }}" name="bulk-amount"
+                                        value="{{ $bundle->quantity }}">
+                                    <label for="bulk-{{ $index + 1 }}">
+                                        Save {{ $percentageSaved }}% - Buy {{ $bundle->quantity }} for
+                                        ৳{{ number_format($bundle->after_discount, 2) }}
+                                        (original price ৳{{ number_format($totalOriginalPrice, 2) }} each, saving
+                                        ৳{{ number_format($savings, 2) }})
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                </div>
+            @endif
+            <!-- Buy Button -->
+            <form class="mt-4">
+                <button type="submit" class="btn btn-buy btn-lg w-100">Proceed</button>
+            </form>
+
+            <!-- Additional Information -->
+            <div class="mt-4">
+                <p><strong>Category:</strong> Health & Beauty</p>
+                <p><strong>Tags:</strong> <a href="#">Vitamins</a>, <a href="#">Supplements</a></p>
+            </div>
+
+            <!-- Share Icons -->
+            <div class="mt-3">
+                <span class="me-2">Share:</span>
+                <a href="#" class="me-2"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+            </div>
+        </div>
+    </div>
+    <h4 class="mt-5 mb-4">Related Products</h4>
+    <div class="row">
+        <!-- Product Card 1 -->
+        <div class="col-md-4">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://via.placeholder.com/300" alt="Product 1">
+                </div>
+                <div class="p-3">
+                    <h5 class="product-title">Product Name 1</h5>
+                    <p class="product-price">৳2,927.65</p>
+                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
+                        It is easy to use and has long-lasting effects.</p>
+                    <div class="rating">★★★★★</div>
+                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Card 2 -->
+        <div class="col-md-4">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://via.placeholder.com/300" alt="Product 1">
+                </div>
+                <div class="p-3">
+                    <h5 class="product-title">Product Name 1</h5>
+                    <p class="product-price">৳2,927.65</p>
+                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
+                        It is easy to use and has long-lasting effects.</p>
+                    <div class="rating">★★★★★</div>
+                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Card 3 -->
+        <div class="col-md-4">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://via.placeholder.com/300" alt="Product 1">
+                </div>
+                <div class="p-3">
+                    <h5 class="product-title">Product Name 1</h5>
+                    <p class="product-price">৳2,927.65</p>
+                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
+                        It is easy to use and has long-lasting effects.</p>
+                    <div class="rating">★★★★★</div>
+                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Product Cards -->
+        <!-- You can replicate the structure above for more products -->
+    </div>
+@endsection
