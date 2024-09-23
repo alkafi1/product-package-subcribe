@@ -16,13 +16,13 @@ class ProductController extends Controller
     public function index()
     {
 
-        $products = Product::latest()->paginate(6); // Adjust the number per page as needed
+        $products = Product::latest()->paginate(8); // Adjust the number per page as needed
         return view('shop', compact('products'));
     }
     public function home()
     {
 
-        $products = Product::latest()->paginate(6); // Adjust the number per page as needed
+        $products = Product::latest()->paginate(8); // Adjust the number per page as needed
         return view('shop', compact('products'));
     }
 
@@ -134,7 +134,8 @@ class ProductController extends Controller
     public function show(string $id)
     {
         $product = Product::findOrFail($id);
-        return view('details', compact('product'));
+        $products = Product::latest()->paginate(4);
+        return view('details', compact('product','products'));
     }
 
     /**
@@ -182,7 +183,7 @@ class ProductController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        // Return with errors if validation fails
+        
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
@@ -191,27 +192,25 @@ class ProductController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         if ($request->input('purchase-type') == 'schedule-buy') {
-            // Retrieve and decode the product's schedule
+            
             $schedules = json_decode($product->schedule, true);
             $selectedInterval = $request->input('schedule-interval');
 
-            // Find the matching schedule
+            
             $matchedSchedule = collect($schedules)->firstWhere('interval', $selectedInterval);
 
-            // Prepare the purchase_type_details for schedule-buy
+            
             $purchaseTypeDetails = $matchedSchedule ? json_encode($matchedSchedule) : null;
         } elseif ($request->input('purchase-type') == 'bulk') {
-            // Decode the product's bundle_details JSON
+
             $bundleDetails = json_decode($product->bundle_details, true);
             $selectedQuantity = $request->input('bundle-quantity');
 
-            // Find the matching bundle detail
             $matchedBundle = collect($bundleDetails)->firstWhere('quantity', $selectedQuantity);
 
-            // Prepare the purchase_type_details for bulk
             $purchaseTypeDetails = $matchedBundle ? json_encode($matchedBundle) : null;
         } else {
-            $purchaseTypeDetails = null; // Default case
+            $purchaseTypeDetails = null; 
         }
 
         $productorder = ProductOrder::create([
@@ -224,6 +223,7 @@ class ProductController extends Controller
                     : $request->input('buy-now-quantity')),
 
             'purchase_type' => $request->input('purchase-type'),
+            'schedule_type' => $product->schedule_type,
             'purchase_type_details' => $purchaseTypeDetails,
         ]);
         return redirect()->back()->with('success', 'Product ordered successfully!');

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('product_quantity'); 
             $table->decimal('product_price', 10, 2); 
             $table->string('purchase_type'); 
+            $table->string('schedule_type')->nullable(); 
             $table->longText('purchase_type_details')->nullable(); 
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');

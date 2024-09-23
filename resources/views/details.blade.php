@@ -146,62 +146,43 @@
     </div>
     <h4 class="mt-5 mb-4">Related Products</h4>
     <div class="row">
-        <!-- Product Card 1 -->
-        <div class="col-md-4">
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="https://via.placeholder.com/300" alt="Product 1">
-                </div>
-                <div class="p-3">
-                    <h5 class="product-title">Product Name 1</h5>
-                    <p class="product-price">৳2,927.65</p>
-                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
-                        It is easy to use and has long-lasting effects.</p>
-                    <div class="rating">★★★★★</div>
-                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
+        @foreach ($products as $product)
+            <div class="col-md-3 mb-4">
+                <div class="product-card border rounded shadow-sm overflow-hidden h-100 d-flex flex-column">
+                    <div class="product-image">
+                        <a href="{{ route('products.show', ['product' => $product->id]) }}">
+                            <img src="https://via.placeholder.com/300" alt="{{ $product->name }}" class="img-fluid w-100"
+                                style="height: 200px; object-fit: cover;">
+                        </a>
+                    </div>
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <h5 class="product-title">{{ $product->name }}</h5>
+
+                        <!-- Badges for is_bundle and is_subscription -->
+                        <div class="mb-2">
+                            @if ($product->is_bundle)
+                                <span class="badge bg-warning">Bundle</span>
+                            @endif
+                            @if ($product->is_subscription)
+                                <span class="badge bg-info">Subscription</span>
+                            @endif
+                        </div>
+
+                        <p class="product-price text-success">৳{{ number_format($product->price, 2) }}</p>
+                        <p class="product-description flex-grow-1">
+                            {{ $product->description ?? 'No description available.' }}</p>
+
+                        <a href="{{ route('products.show', ['product' => $product->id]) }}"
+                            class="btn btn-buy w-100 mt-auto">
+                            View Details
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endforeach
 
-        <!-- Product Card 2 -->
-        <div class="col-md-4">
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="https://via.placeholder.com/300" alt="Product 1">
-                </div>
-                <div class="p-3">
-                    <h5 class="product-title">Product Name 1</h5>
-                    <p class="product-price">৳2,927.65</p>
-                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
-                        It is easy to use and has long-lasting effects.</p>
-                    <div class="rating">★★★★★</div>
-                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Product Card 3 -->
-        <div class="col-md-4">
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="https://via.placeholder.com/300" alt="Product 1">
-                </div>
-                <div class="p-3">
-                    <h5 class="product-title">Product Name 1</h5>
-                    <p class="product-price">৳2,927.65</p>
-                    <p class="product-description">This product helps you achieve a brighter smile with its unique formula.
-                        It is easy to use and has long-lasting effects.</p>
-                    <div class="rating">★★★★★</div>
-                    <a href="#details1" class="btn btn-buy w-100">View Details</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Product Cards -->
-        <!-- You can replicate the structure above for more products -->
     </div>
     @push('script')
-        
     @endpush
 
 
