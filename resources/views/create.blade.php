@@ -22,11 +22,7 @@
                 <label for="name" class="form-label">Product Name</label>
                 <input type="text" class="form-control {{ $errors->has('name') ? 'is-invalid blink' : '' }}" id="name"
                     name="name" value="{{ old('name') }}">
-                @error('name')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+                
             </div>
 
             <!-- Product Slug -->
@@ -34,11 +30,7 @@
                 <label for="slug" class="form-label">Product Slug</label>
                 <input type="text" class="form-control {{ $errors->has('slug') ? 'is-invalid blink' : '' }}"
                     id="slug" name="slug" value="{{ old('slug') }}">
-                @error('slug')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+                
             </div>
 
             <!-- Price -->
@@ -47,11 +39,7 @@
                 <input type="number" step="0.01"
                     class="form-control {{ $errors->has('price') ? 'is-invalid blink' : '' }}" id="price" name="price"
                     value="{{ old('price') }}">
-                @error('price')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+                
             </div>
 
             <!-- Quantity -->
@@ -59,22 +47,14 @@
                 <label for="quantity" class="form-label">Quantity</label>
                 <input type="number" class="form-control {{ $errors->has('quantity') ? 'is-invalid blink' : '' }}"
                     id="quantity" name="quantity" value="{{ old('quantity') }}">
-                @error('quantity')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+                
             </div>
             <!-- Is Bundle Checkbox -->
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input {{ $errors->has('is_bundle') ? 'is-invalid blink' : '' }}"
                     id="is_bundle" name="is_bundle" {{ old('is_bundle') ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_bundle">Is Bundle</label>
-                @error('is_bundle')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+                
             </div>
             <div id="bundle_details_container" style="display: none;">
                 <h4>Bundle Details</h4>
@@ -94,9 +74,7 @@
                                     <input type="number"
                                         class="form-control @error("bundle_quantity.{$index}") is-invalid @enderror"
                                         name="bundle_quantity[]" value="{{ $quantity }}">
-                                    @error("bundle_quantity.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    
                                 </div>
                                 <div class="mb-3">
                                     <label for="bundle_discount_type_{{ $index }}" class="form-label">Discount
@@ -110,9 +88,7 @@
                                             {{ old("bundle_discount_type.{$index}") == 'fixed' ? 'selected' : '' }}>Fixed
                                         </option>
                                     </select>
-                                    @error("bundle_discount_type.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    
                                 </div>
                                 <div class="mb-3">
                                     <label for="bundle_discount_amount_{{ $index }}" class="form-label">Discount
@@ -121,9 +97,7 @@
                                         class="form-control @error("bundle_discount_amount.{$index}") is-invalid @enderror"
                                         name="bundle_discount_amount[]"
                                         value="{{ old("bundle_discount_amount.{$index}") }}">
-                                    @error("bundle_discount_amount.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+
                                 </div>
                             </div>
                         @endforeach
@@ -159,11 +133,7 @@
                     class="form-check-input {{ $errors->has('is_subscribable') ? 'is-invalid blink' : '' }}"
                     id="is_subscribable" name="is_subscribable" {{ old('is_subscribable') ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_subscribable">Is Subscribable</label>
-                @error('is_subscribable')
-                    <div class="invalid-feedback">
-                        {{ $message }}
-                    </div>
-                @enderror
+
             </div>
 
             <div id="schedule_details_container" style="display: none;">
@@ -193,9 +163,6 @@
                                         name="schedule_interval[]">
                                         <!-- Options populated by JS -->
                                     </select>
-                                    @error("schedule_interval.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
 
                                 <div class="mb-3">
@@ -205,9 +172,6 @@
                                         class="form-control @error("schedule_day.{$index}") is-invalid @enderror"
                                         name="schedule_day[]" min="0" max="6"
                                         value="{{ old("schedule_day.{$index}") }}">
-                                    @error("schedule_day.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
 
                                 <div class="mb-3">
@@ -215,9 +179,7 @@
                                     <input type="time"
                                         class="form-control @error("schedule_time.{$index}") is-invalid @enderror"
                                         name="schedule_time[]" value="{{ old("schedule_time.{$index}") }}">
-                                    @error("schedule_time.{$index}")
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+
                                 </div>
                             </div>
                         @endforeach
@@ -249,12 +211,11 @@
                 </button>
             </div>
 
-            <button type="submit" class="btn btn-primary mt-2">Create Product</button>
+            <button type="submit" class="btn btn-dark bg-dark mt-2">Create Product</button>
         </form>
     </div>
-
+@push('script')
     <!-- jQuery and Script for Dynamic Handling -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Error blink effect
         function blinkError(element) {
@@ -384,31 +345,8 @@
         });
     </script>
 
-
-
-    <!-- Toastr CSS and JS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-    <script>
-        toastr.options = {
-            "closeButton": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-            "timeOut": "3000", // 3 seconds
-            "extendedTimeOut": "1000",
-        };
-
-        @if (session('success'))
-            toastr.success("{{ session('success') }}");
-        @endif
-
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                toastr.error("{{ $error }}");
-            @endforeach
-        @endif
-    </script>
+@endpush
+    
 
 
 @endsection

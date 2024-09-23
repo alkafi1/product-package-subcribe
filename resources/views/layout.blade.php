@@ -163,6 +163,8 @@
         .nav-link {
             color: #fff !important;
         }
+
+        
     </style>
 </head>
 
@@ -183,7 +185,7 @@
                         <a class="nav-link" href="{{ route('products.index') }}">Shop</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{route('products.create')}}">Add Products</a>
+                        <a class="nav-link" href="{{ route('products.create') }}">Add Products</a>
                     </li>
                 </ul>
             </div>
@@ -197,7 +199,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <!-- Toastr CSS and JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <script>
         $(document).ready(function() {
@@ -232,6 +239,29 @@
             });
         });
     </script>
+    @stack('script')
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "timeOut": "3000", // 3 seconds
+            "extendedTimeOut": "1000",
+        };
+
+        // Display success message if available
+        @if (session('success'))
+            toastr.success("{{ session('success') }}");
+        @endif
+
+        // Display error messages if any exist
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                toastr.error("{{ $error }}");
+            @endforeach
+        @endif
+    </script>
+
 </body>
 
 </html>

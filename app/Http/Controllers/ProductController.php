@@ -38,7 +38,6 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Step 1: Validation Rules
         $rules = [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug',
@@ -48,7 +47,6 @@ class ProductController extends Controller
             'is_subscribable' => 'nullable',
         ];
 
-        // Step 2: Add bundle-specific validation rules if is_bundle is true
         if ($request->input('is_bundle')) {
             $rules['bundle_quantity'] = 'required|array';
             $rules['bundle_quantity.*'] = 'required|integer|min:1';
@@ -58,7 +56,6 @@ class ProductController extends Controller
             $rules['bundle_discount_amount.*'] = 'required|numeric|min:0';
         }
 
-        // Step 3: Add subscription-specific validation rules if is_subscribable is true
         if ($request->input('is_subscribable')) {
             $rules['schedule_type'] = 'required|in:monthly,days';
             $rules['schedule_interval'] = 'required|array';
@@ -69,7 +66,6 @@ class ProductController extends Controller
             $rules['schedule_time.*'] = 'required|date_format:H:i'; // Ensure time format
         }
 
-        // Step 4: Validate the request data
         $validator = Validator::make($request->all(), $rules);
 
         // Return with errors if validation fails
@@ -79,8 +75,7 @@ class ProductController extends Controller
                 ->withInput();
         }
 
-        // Step 5: Prepare bundle details if the product is a bundle
-        // $bundleDetails = [];
+        $bundleDetails = [];
         if ($request->has('is_bundle')) {
             foreach ($request->bundle_quantity as $index => $quantity) {
                 $type = $request->bundle_discount_type[$index];
@@ -102,7 +97,6 @@ class ProductController extends Controller
             }
         }
 
-        // Step 6: Prepare subscription schedule details if the product is subscribable
         $scheduleDetails = [];
         if ($request->has('is_subscribable')) {
             foreach ($request->schedule_interval as $index => $interval) {
@@ -113,8 +107,7 @@ class ProductController extends Controller
                 ];
             }
         }
-// return $request->has('is_bundle') ? json_encode($bundleDetails) : null;
-        // Step 7: Create the product
+
         $product = Product::create([
             'name' => $request->name,
             'slug' => Str::slug($request->slug),
@@ -131,7 +124,6 @@ class ProductController extends Controller
             'schedule' => $request->has('is_subscribable') ? json_encode($scheduleDetails) : null,
         ]);
 
-        // Step 8: Redirect with success message
         return redirect()->back()->with('success', 'Product created successfully!');
     }
 
@@ -166,5 +158,36 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function order(Request $request)
+    {
+        // return $request->all();
+        $rules = [
+            'product_id' => 'required',
+            'purchase-type' => 'required',
+        ];
+
+        if ($request->input('purchase-type') == 'buy-now') {
+            $rules['buy-now-quantity'] = 'required|integer|min:1';
+        }
+        if ($request->input('purchase-type') == 'schedule-buy') {
+            $rules['schedule-quantity'] = 'required|integer|min:1';
+            $rules['schedule-interval'] = 'required';
+        }
+        if ($request->input('purchase-type') == 'bulk') {
+            $rules['bundle-quantity'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        // Return with errors if validation fails
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        return $request->all();
     }
 }
