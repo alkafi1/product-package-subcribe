@@ -19,21 +19,21 @@
 
             <div class="mb-3">
                 <label for="name" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" class="form-control" id="name" name="name" >
             </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Product Slug</label>
-                <input type="text" class="form-control" id="slug" name="slug" required>
+                <input type="text" class="form-control" id="slug" name="slug" >
             </div>
 
             <div class="mb-3">
                 <label for="price" class="form-label">Price</label>
-                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                <input type="number" step="0.01" class="form-control" id="price" name="price" >
             </div>
 
             <div class="mb-3">
                 <label for="quantity" class="form-label">Quantity</label>
-                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                <input type="number" class="form-control" id="quantity" name="quantity">
             </div>
 
             <!-- Is Bundle Checkbox -->
@@ -90,18 +90,18 @@
 
                         <div class="mb-3">
                             <label for="schedule_interval" class="form-label">Interval</label>
-                            <select class="form-select schedule_interval" name="schedule_interval[]" required>
+                            <select class="form-select schedule_interval" name="schedule_interval[]" >
                                 <!-- Options will be set via JavaScript -->
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="schedule_day" class="form-label">Day of Week (0 = Sunday)</label>
                             <input type="number" class="form-control" name="schedule_day[]" min="0" max="6"
-                                required>
+                                >
                         </div>
                         <div class="mb-3">
                             <label for="schedule_time" class="form-label">Time</label>
-                            <input type="time" class="form-control" name="schedule_time[]" required>
+                            <input type="time" class="form-control" name="schedule_time[]">
                         </div>
                     </div>
                 </div>
@@ -197,17 +197,17 @@
             <div class="schedule_detail card-border-green mb-3 p-3 border border-success rounded">
                 <div class="mb-3">
                     <label for="schedule_interval_new" class="form-label">Interval</label>
-                    <select class="form-select schedule_interval" name="schedule_interval[]" required>
+                    <select class="form-select schedule_interval" name="schedule_interval[]" >
                         <!-- Options will be set via JavaScript -->
                     </select>
                 </div>
                 <div class="mb-3">
                     <label for="schedule_day_new" class="form-label">Day of Week (0 = Sunday)</label>
-                    <input id="schedule_day_new" type="number" class="form-control" name="schedule_day[]" min="0" max="6" required>
+                    <input id="schedule_day_new" type="number" class="form-control" name="schedule_day[]" min="0" max="6" >
                 </div>
                 <div class="mb-3">
                     <label for="schedule_time_new" class="form-label">Time</label>
-                    <input id="schedule_time_new" type="time" class="form-control" name="schedule_time[]" required>
+                    <input id="schedule_time_new" type="time" class="form-control" name="schedule_time[]">
                 </div>
                 <button type="button" class="btn btn-danger remove-schedule">
                     <i class="fas fa-trash-alt"></i> Remove

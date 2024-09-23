@@ -41,18 +41,18 @@ class ProductController extends Controller
         // Bundle validation
         'is_bundle' => 'nullable|in:on',
         'bundle_quantity' => 'required_if:is_bundle,on|array',
-        'bundle_quantity.*' => 'integer|min:1',
-        'bundle_discount_type' => 'required_if:is_bundle,on|array',
-        'bundle_discount_type.*' => 'in:percentage,fixed',
+        'bundle_quantity' => 'integer|min:1',
+        'bundle_discount_type'=> 'required_if:is_bundle,on|array',
+        'bundle_discount_type' => 'in:percentage,fixed',
         'bundle_discount_amount' => 'required_if:is_bundle,on|array',
-        'bundle_discount_amount.*' => 'numeric|min:0',
+        'bundle_discount_amount' => 'numeric|min:0',
 
         // Subscription validation
         'is_subscribable' => 'nullable|in:on',
         'schedule_type' => 'required_if:is_subscribable,on|in:monthly,days',
-        'schedule_interval.*' => 'required_if:is_subscribable,on|integer|min:1',
-        'schedule_day.*' => 'required_if:is_subscribable,on|integer|min:0|max:6', // Assuming day of the week (0 = Sunday)
-        'schedule_time.*' => 'required_if:is_subscribable,on',
+        'schedule_interval' => 'required_if:is_subscribable,on|integer|min:1',
+        'schedule_day' => 'required_if:is_subscribable,on|integer|min:0|max:6', // Assuming day of the week (0 = Sunday)
+        'schedule_time' => 'required_if:is_subscribable,on',
     ]);
 
     // If validation fails, return errors
