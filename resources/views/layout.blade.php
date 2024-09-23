@@ -185,6 +185,9 @@
                         <a class="nav-link" href="{{ route('products.index') }}">Shop</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('products.cart.show') }}">Cart</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('products.create') }}">Add Products</a>
                     </li>
                 </ul>

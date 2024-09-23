@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductCart;
 use App\Models\ProductOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -135,7 +136,7 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $products = Product::latest()->paginate(4);
-        return view('details', compact('product','products'));
+        return view('details', compact('product', 'products'));
     }
 
     /**
@@ -162,6 +163,96 @@ class ProductController extends Controller
         //
     }
 
+    public function addCart(Request $request)
+    {
+        // return $request->all();
+        $rules = [
+            'product_id' => 'required',
+            'purchase-type' => 'required',
+        ];
+
+        if ($request->input('purchase-type') == 'buy-now') {
+            $rules['buy-now-quantity'] = 'required|integer|min:1';
+        }
+        if ($request->input('purchase-type') == 'schedule-buy') {
+            $rules['schedule-quantity'] = 'required|integer|min:1';
+            $rules['schedule-interval'] = 'required';
+        }
+        if ($request->input('purchase-type') == 'bulk') {
+            $rules['bundle-quantity'] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        $product = Product::findOrFail($request->product_id);
+        
+        $existProduct = ProductCart::where('product_id', $request->product_id)->first();
+        
+        if ($existProduct) {
+            return redirect()->back()
+                ->withErrors(['product' => 'The product is already in the cart.'])
+                ->withInput();
+        }
+        if ($request->input('purchase-type') == 'schedule-buy') {
+
+            $schedules = json_decode($product->schedule, true);
+            $selectedInterval = $request->input('schedule-interval');
+
+
+            $matchedSchedule = collect($schedules)->firstWhere('interval', $selectedInterval);
+
+
+            $purchaseTypeDetails = $matchedSchedule ? json_encode($matchedSchedule) : null;
+        } elseif ($request->input('purchase-type') == 'bulk') {
+
+            $bundleDetails = json_decode($product->bundle_details, true);
+            $selectedQuantity = $request->input('bundle-quantity');
+
+            $matchedBundle = collect($bundleDetails)->firstWhere('quantity', $selectedQuantity);
+            $purchaseTypeDetails = $matchedBundle ? json_encode($matchedBundle) : null;
+        } else {
+            $purchaseTypeDetails = null;
+        }
+
+        $productcart = ProductCart::create([
+            'product_id' => $request->product_id,
+            'product_price' => $product->price,
+            'product_total_price' => $request->input('purchase-type') == 'bulk'
+                ? $matchedBundle['after_discount']
+                : ($request->input('purchase-type') == 'schedule-buy'
+                    ? $request->input('schedule-quantity') * $product->price
+                    : $request->input('buy-now-quantity') * $product->price),
+
+            'product_quantity' => $request->input('purchase-type') == 'bulk'
+                ? $selectedQuantity
+                : ($request->input('purchase-type') == 'schedule-buy'
+                    ? $request->input('schedule-quantity')
+                    : $request->input('buy-now-quantity')),
+
+            'purchase_type' => $request->input('purchase-type'),
+            'schedule_type' => $product->is_subscribable ? $product->schedule_type : null,
+            'purchase_type_details' => $purchaseTypeDetails,
+        ]);
+        return redirect()->back()->with('success', 'Product add cart successfully!');
+    }
+
+    public function cartShow()
+    {
+        $products = ProductCart::latest()->get();
+        return view('cart', compact('products'));
+    }
+    public function cartDelete($id)
+    {
+        $products = ProductCart::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Product delete form cart successfully!');
+    }
     public function order(Request $request)
     {
         // return $request->all();
@@ -183,7 +274,7 @@ class ProductController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
@@ -192,14 +283,14 @@ class ProductController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         if ($request->input('purchase-type') == 'schedule-buy') {
-            
+
             $schedules = json_decode($product->schedule, true);
             $selectedInterval = $request->input('schedule-interval');
 
-            
+
             $matchedSchedule = collect($schedules)->firstWhere('interval', $selectedInterval);
 
-            
+
             $purchaseTypeDetails = $matchedSchedule ? json_encode($matchedSchedule) : null;
         } elseif ($request->input('purchase-type') == 'bulk') {
 
@@ -210,7 +301,7 @@ class ProductController extends Controller
 
             $purchaseTypeDetails = $matchedBundle ? json_encode($matchedBundle) : null;
         } else {
-            $purchaseTypeDetails = null; 
+            $purchaseTypeDetails = null;
         }
 
         $productorder = ProductOrder::create([
