@@ -162,7 +162,8 @@ class ProductController extends Controller
     {
         //
     }
-
+    
+    //cart
     public function addCart(Request $request)
     {
         // return $request->all();
@@ -237,7 +238,7 @@ class ProductController extends Controller
                     : $request->input('buy-now-quantity')),
 
             'purchase_type' => $request->input('purchase-type'),
-            'schedule_type' => $product->is_subscribable ? $product->schedule_type : null,
+            'schedule_type' => $request->input('purchase-type') == 'buy-now' ? null : $product->schedule_type,
             'purchase_type_details' => $purchaseTypeDetails,
         ]);
         return redirect()->back()->with('success', 'Product add cart successfully!');
@@ -253,6 +254,8 @@ class ProductController extends Controller
         $products = ProductCart::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Product delete form cart successfully!');
     }
+
+    //order
     public function order(Request $request)
     {
         // return $request->all();

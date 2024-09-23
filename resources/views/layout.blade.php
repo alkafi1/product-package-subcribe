@@ -164,7 +164,104 @@
             color: #fff !important;
         }
 
-        
+        /* Set the height of the carousel images */
+        .carousel-image {
+            height: 500px;
+            object-fit: cover;
+        }
+
+        /* Background animation for the section */
+        .animated-section {
+            height: 50px;
+            padding-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(270deg, #ffafbd, #ffc3a0, #ffafbd);
+            background-size: 600% 600%;
+            animation: backgroundAnimation 6s ease infinite;
+            border: 5px solid transparent;
+            /* Initial transparent border */
+            border-radius: 5px;
+            /* Optional: add rounded corners */
+            position: relative;
+            /* Positioning for the inner border effect */
+        }
+
+        /* Background animation for the section */
+        .animated-section {
+            height: 50px;
+            padding-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('https://c.myholidays.com/blog/blog/content/images/2020/09/Shopping-In-Qatar-The-Top-10-Souvenirs-To-Buy-From-Qatar.webp');
+            /* Set your graphical image here */
+            background-size: cover;
+            /* Cover the entire section */
+            background-position: center;
+            /* Center the image */
+            position: relative;
+            overflow: hidden;
+            /* Ensure the border stays within bounds */
+        }
+
+        /* Inner border effect */
+        .animated-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 5px solid transparent;
+            /* Initial transparent border */
+            border-radius: 5px;
+            z-index: -1;
+            /* Place behind the text */
+            animation: borderAnimation 6s linear infinite;
+            /* Border animation */
+            background-image: linear-gradient(0deg, #ffafbd, #ffc3a0, #ffafbd);
+            /* Gradient for color rotation */
+            background-size: 200% 200%;
+            /* Ensure the gradient moves */
+        }
+
+        /* Text inside the animated background */
+        .animated-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* Keyframes for border animation with rotation */
+        @keyframes borderAnimation {
+            0% {
+                transform: rotate(0deg);
+                background-position: 0% 50%;
+            }
+
+            25% {
+                transform: rotate(90deg);
+                background-position: 100% 50%;
+            }
+
+            50% {
+                transform: rotate(180deg);
+                background-position: 100% 50%;
+            }
+
+            75% {
+                transform: rotate(270deg);
+                background-position: 0% 50%;
+            }
+
+            100% {
+                transform: rotate(360deg);
+                background-position: 0% 50%;
+            }
+        }
     </style>
 </head>
 
@@ -194,7 +291,7 @@
             </div>
         </div>
     </nav>
-    <div class="container my-5">
+    <div class="container">
         @yield('main-content')
     </div>
 
@@ -205,7 +302,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <!-- Toastr CSS and JS -->
+    <!-- Toastr CSS and JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
