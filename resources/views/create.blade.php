@@ -1,7 +1,9 @@
 @extends('layout')
 
 @section('main-content')
-    <div class="container">
+    <div class="container mt-2">
+        <!-- Animated Background Section -->
+    
         <h1>Create Product</h1>
 
         {{-- @if ($errors->any())

@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('main-content')
-    <div class="row">
+    <div class="row mt-2">
         <!-- Product Image Section -->
         <div class="col-md-6 product-image">
             <img src="https://via.placeholder.com/600" alt="{{ $product->name }}">
