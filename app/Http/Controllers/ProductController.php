@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -187,7 +188,44 @@ class ProductController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        
-        return $request->all();
+        $product = Product::findOrFail($request->product_id);
+
+        if ($request->input('purchase-type') == 'schedule-buy') {
+            // Retrieve and decode the product's schedule
+            $schedules = json_decode($product->schedule, true);
+            $selectedInterval = $request->input('schedule-interval');
+
+            // Find the matching schedule
+            $matchedSchedule = collect($schedules)->firstWhere('interval', $selectedInterval);
+
+            // Prepare the purchase_type_details for schedule-buy
+            $purchaseTypeDetails = $matchedSchedule ? json_encode($matchedSchedule) : null;
+        } elseif ($request->input('purchase-type') == 'bulk') {
+            // Decode the product's bundle_details JSON
+            $bundleDetails = json_decode($product->bundle_details, true);
+            $selectedQuantity = $request->input('bundle-quantity');
+
+            // Find the matching bundle detail
+            $matchedBundle = collect($bundleDetails)->firstWhere('quantity', $selectedQuantity);
+
+            // Prepare the purchase_type_details for bulk
+            $purchaseTypeDetails = $matchedBundle ? json_encode($matchedBundle) : null;
+        } else {
+            $purchaseTypeDetails = null; // Default case
+        }
+
+        $productorder = ProductOrder::create([
+            'product_id' => $request->product_id,
+            'product_price' => $product->price,
+            'product_quantity' => $request->input('purchase-type') == 'bulk'
+                ? $selectedQuantity
+                : ($request->input('purchase-type') == 'schedule-buy'
+                    ? $request->input('schedule-quantity')
+                    : $request->input('buy-now-quantity')),
+
+            'purchase_type' => $request->input('purchase-type'),
+            'purchase_type_details' => $purchaseTypeDetails,
+        ]);
+        return redirect()->back()->with('success', 'Product ordered successfully!');
     }
 }
