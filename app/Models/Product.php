@@ -14,8 +14,8 @@ class Product extends Model
         'bundle_discount', 'is_subscribable', 'schedule_type', 'schedule'
     ];
 
-    protected $casts = [
-        'bundle_discount' => 'array',
-        'schedule' => 'array',
-    ];
+    // protected $casts = [
+    //     'bundle_discount' => 'array',
+    //     'schedule' => 'array',
+    // ];
 }
