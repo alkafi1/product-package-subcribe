@@ -12,8 +12,15 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
+
+        $products = Product::latest()->paginate(6); // Adjust the number per page as needed
+        return view('shop', compact('products'));
+    }
+    public function home()
+    {
+
         $products = Product::latest()->paginate(6); // Adjust the number per page as needed
         return view('shop', compact('products'));
     }
@@ -31,73 +38,83 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request data
-        $validator = Validator::make($request->all(), [
+        // Step 1: Validation Rules
+        $rules = [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:0',
+            'is_bundle' => 'nullable',
+            'is_subscribable' => 'nullable',
+        ];
 
-            // Bundle validation
-            'is_bundle' => 'nullable|in:on',
-            'bundle_quantity' => 'required_if:is_bundle,on|array',
-            'bundle_quantity' => 'integer|min:1',
-            'bundle_discount_type' => 'required_if:is_bundle,on|array',
-            'bundle_discount_type' => 'in:percentage,fixed',
-            'bundle_discount_amount' => 'required_if:is_bundle,on|array',
-            'bundle_discount_amount' => 'numeric|min:0',
+        // Step 2: Add bundle-specific validation rules if is_bundle is true
+        if ($request->input('is_bundle')) {
+            $rules['bundle_quantity'] = 'required|array';
+            $rules['bundle_quantity.*'] = 'required|integer|min:1';
+            $rules['bundle_discount_type'] = 'required|array';
+            $rules['bundle_discount_type.*'] = 'required|in:percentage,fixed';
+            $rules['bundle_discount_amount'] = 'required|array';
+            $rules['bundle_discount_amount.*'] = 'required|numeric|min:0';
+        }
 
-            // Subscription validation
-            'is_subscribable' => 'nullable|in:on',
-            'schedule_type' => 'required_if:is_subscribable,on|in:monthly,days',
-            'schedule_interval' => 'required_if:is_subscribable,on|integer|min:1',
-            'schedule_day' => 'required_if:is_subscribable,on|integer|min:0|max:6', // Assuming day of the week (0 = Sunday)
-            'schedule_time' => 'required_if:is_subscribable,on',
-        ]);
+        // Step 3: Add subscription-specific validation rules if is_subscribable is true
+        if ($request->input('is_subscribable')) {
+            $rules['schedule_type'] = 'required|in:monthly,days';
+            $rules['schedule_interval'] = 'required|array';
+            $rules['schedule_interval.*'] = 'required|integer|min:1';
+            $rules['schedule_day'] = 'required|array';
+            $rules['schedule_day.*'] = 'required|integer|min:0|max:6';
+            $rules['schedule_time'] = 'required|array';
+            $rules['schedule_time.*'] = 'required|date_format:H:i'; // Ensure time format
+        }
 
-        // If validation fails, return errors
+        // Step 4: Validate the request data
+        $validator = Validator::make($request->all(), $rules);
+
+        // Return with errors if validation fails
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        // Step 1: Generate bundle details
-        $bundleDetails = [];
+        // Step 5: Prepare bundle details if the product is a bundle
+        // $bundleDetails = [];
         if ($request->has('is_bundle')) {
             foreach ($request->bundle_quantity as $index => $quantity) {
                 $type = $request->bundle_discount_type[$index];
-                $discount_amount = $request->bundle_discount_amount[$index];
+                $discountAmount = $request->bundle_discount_amount[$index];
                 $price = $request->price;
 
                 // Calculate after discount based on the type
-                $after_discount = ($type === 'percentage')
-                    ? max(0, ($quantity * $price) - (($discount_amount * ($quantity * $price)) / 100))
-                    : max(0, ($quantity * $price) - $discount_amount);
+                $afterDiscount = ($type === 'percentage')
+                    ? max(0, ($quantity * $price) - (($discountAmount * ($quantity * $price)) / 100))
+                    : max(0, ($quantity * $price) - $discountAmount);
 
                 $bundleDetails[] = [
                     'quantity' => $quantity,
                     'type' => $type,
-                    'discount_amount' => $discount_amount,
+                    'discount_amount' => $discountAmount,
                     'product_price' => $price,
-                    'after_discount' => $after_discount,
+                    'after_discount' => $afterDiscount,
                 ];
             }
         }
 
-        // Step 2: Generate subscription schedule details
-        $schedule = [];
+        // Step 6: Prepare subscription schedule details if the product is subscribable
+        $scheduleDetails = [];
         if ($request->has('is_subscribable')) {
             foreach ($request->schedule_interval as $index => $interval) {
-                $schedule[] = [
+                $scheduleDetails[] = [
                     'interval' => $interval,
                     'day' => $request->schedule_day[$index],
                     'time' => $request->schedule_time[$index],
                 ];
             }
         }
-
-        // Step 3: Create the product and save the details
+// return $request->has('is_bundle') ? json_encode($bundleDetails) : null;
+        // Step 7: Create the product
         $product = Product::create([
             'name' => $request->name,
             'slug' => Str::slug($request->slug),
@@ -111,15 +128,12 @@ class ProductController extends Controller
             // Subscription details
             'is_subscribable' => $request->has('is_subscribable'),
             'schedule_type' => $request->has('is_subscribable') ? $request->schedule_type : null,
-            'schedule' => $request->has('is_subscribable') ? json_encode($schedule) : null,
+            'schedule' => $request->has('is_subscribable') ? json_encode($scheduleDetails) : null,
         ]);
 
-        // Step 4: Redirect to a success page or return success response
+        // Step 8: Redirect with success message
         return redirect()->back()->with('success', 'Product created successfully!');
     }
-
-
-
 
     /**
      * Display the specified resource.

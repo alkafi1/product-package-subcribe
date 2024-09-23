@@ -19,16 +19,16 @@
 
             <div class="mb-3">
                 <label for="name" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="name" name="name" >
+                <input type="text" class="form-control" id="name" name="name">
             </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Product Slug</label>
-                <input type="text" class="form-control" id="slug" name="slug" >
+                <input type="text" class="form-control" id="slug" name="slug">
             </div>
 
             <div class="mb-3">
                 <label for="price" class="form-label">Price</label>
-                <input type="number" step="0.01" class="form-control" id="price" name="price" >
+                <input type="number" step="0.01" class="form-control" id="price" name="price">
             </div>
 
             <div class="mb-3">
@@ -90,14 +90,13 @@
 
                         <div class="mb-3">
                             <label for="schedule_interval" class="form-label">Interval</label>
-                            <select class="form-select schedule_interval" name="schedule_interval[]" >
+                            <select class="form-select schedule_interval" name="schedule_interval[]">
                                 <!-- Options will be set via JavaScript -->
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="schedule_day" class="form-label">Day of Week (0 = Sunday)</label>
-                            <input type="number" class="form-control" name="schedule_day[]" min="0" max="6"
-                                >
+                            <input type="number" class="form-control" name="schedule_day[]" min="0" max="6">
                         </div>
                         <div class="mb-3">
                             <label for="schedule_time" class="form-label">Time</label>
@@ -218,7 +217,7 @@
 
             // Automatically populate interval for the new schedule based on the initial schedule type
             const initialScheduleType = $('.schedule_type').val();
-        populateInterval($('.schedule_interval'), initialScheduleType);
+            populateInterval($('.schedule_interval'), initialScheduleType);
         });
 
         // Handle schedule type changes for the initial block
@@ -232,5 +231,17 @@
         $(document).on('click', '.remove-schedule', function() {
             $(this).closest('.schedule_detail').remove();
         });
+    </script>
+
+    <script>
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                timer: 3000, // Automatically close after 3 seconds
+                showConfirmButton: false
+            });
+        @endif
     </script>
 @endsection

@@ -10,8 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'price', 'quantity', 'is_bundle', 'package_quantity',
-        'bundle_discount', 'is_subscribable', 'schedule_type', 'schedule'
+        'name', 'slug', 'price', 'quantity', 'is_bundle', 'bundle_details', 'is_subscribable', 'schedule_type', 'schedule'
     ];
 
     // protected $casts = [
