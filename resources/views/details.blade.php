@@ -8,7 +8,7 @@
         </div>
         <!-- Product Details Section -->
         <div class="col-md-6">
-            <form action="{{ route('products.order') }}" method="post">
+            <form action="{{ route('products.cart') }}" method="post">
                 @csrf
                 <h2 class="product-title">{{ $product->name }}</h2>
                 <p class="product-price">৳{{ number_format($product->price, 2) }}</p>
@@ -127,7 +127,7 @@
                 {{-- <!-- Buy Button -->
             <form class="mt-4"> --}}
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <button type="submit" class="btn btn-buy btn-lg w-100">Proceed</button>
+                <button type="submit" class="btn btn-buy btn-lg w-100"><i class="fas fa-cart-plus"></i> Add To Cart</button>
             </form>
 
             <!-- Additional Information -->
