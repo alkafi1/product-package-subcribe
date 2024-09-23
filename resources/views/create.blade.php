@@ -149,7 +149,7 @@
                     @endif
                 </div>
                 <button type="button" id="add_bundle" class="btn btn-success">
-                    <i class="fas fa-add"></i> Add More Bundle
+                    <i class="fas fa-add"></i> Add More
                 </button>
             </div>
 
@@ -181,31 +181,40 @@
                         $schedule_days = old('schedule_day', []);
                         $schedule_times = old('schedule_time', []);
                     @endphp
-    
-                    @if(count($schedule_intervals) > 0)
-                        @foreach($schedule_intervals as $index => $interval)
+
+                    @if (count($schedule_intervals) > 0)
+                        @foreach ($schedule_intervals as $index => $interval)
                             <div class="schedule_detail card-border-green mb-3 p-3 border border-success rounded">
                                 <div class="mb-3">
-                                    <label for="schedule_interval_{{ $index }}" class="form-label">Interval</label>
-                                    <select class="form-select schedule_interval @error("schedule_interval.{$index}") is-invalid @enderror" name="schedule_interval[]">
+                                    <label for="schedule_interval_{{ $index }}"
+                                        class="form-label">Interval</label>
+                                    <select
+                                        class="form-select schedule_interval @error("schedule_interval.{$index}") is-invalid @enderror"
+                                        name="schedule_interval[]">
                                         <!-- Options populated by JS -->
                                     </select>
                                     @error("schedule_interval.{$index}")
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-    
+
                                 <div class="mb-3">
-                                    <label for="schedule_day_{{ $index }}" class="form-label">Day of Week (0 = Sunday)</label>
-                                    <input type="number" class="form-control @error("schedule_day.{$index}") is-invalid @enderror" name="schedule_day[]" min="0" max="6" value="{{ old("schedule_day.{$index}") }}">
+                                    <label for="schedule_day_{{ $index }}" class="form-label">Day of Week (0 =
+                                        Sunday)</label>
+                                    <input type="number"
+                                        class="form-control @error("schedule_day.{$index}") is-invalid @enderror"
+                                        name="schedule_day[]" min="0" max="6"
+                                        value="{{ old("schedule_day.{$index}") }}">
                                     @error("schedule_day.{$index}")
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-    
+
                                 <div class="mb-3">
                                     <label for="schedule_time_{{ $index }}" class="form-label">Time</label>
-                                    <input type="time" class="form-control @error("schedule_time.{$index}") is-invalid @enderror" name="schedule_time[]" value="{{ old("schedule_time.{$index}") }}">
+                                    <input type="time"
+                                        class="form-control @error("schedule_time.{$index}") is-invalid @enderror"
+                                        name="schedule_time[]" value="{{ old("schedule_time.{$index}") }}">
                                     @error("schedule_time.{$index}")
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -221,12 +230,13 @@
                                     <!-- Options populated by JS -->
                                 </select>
                             </div>
-    
+
                             <div class="mb-3">
                                 <label for="schedule_day_0" class="form-label">Day of Week (0 = Sunday)</label>
-                                <input type="number" class="form-control" name="schedule_day[]" min="0" max="6">
+                                <input type="number" class="form-control" name="schedule_day[]" min="0"
+                                    max="6">
                             </div>
-    
+
                             <div class="mb-3">
                                 <label for="schedule_time_0" class="form-label">Time</label>
                                 <input type="time" class="form-control" name="schedule_time[]">
@@ -235,7 +245,7 @@
                     @endif
                 </div>
                 <button type="button" id="add_schedule" class="btn btn-success">
-                    <i class="fas fa-add"></i> Add More Schedule
+                    <i class="fas fa-add"></i> Add More
                 </button>
             </div>
 
@@ -375,26 +385,30 @@
     </script>
 
 
-    @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: "{{ session('success') }}",
-                timer: 3000, // Automatically close after 3 seconds
-                showConfirmButton: false
-            });
-        </script>
-    @endif
-    @if ($errors->any())
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ session('success') }}',
-                timer: 3000, // Automatically close after 3 seconds
-                showConfirmButton: false
-            });
-        </script>
-    @endif
+
+    <!-- Toastr CSS and JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000", // 3 seconds
+            "extendedTimeOut": "1000",
+        };
+
+        @if (session('success'))
+            toastr.success("{{ session('success') }}");
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                toastr.error("{{ $error }}");
+            @endforeach
+        @endif
+    </script>
+
+
 @endsection
