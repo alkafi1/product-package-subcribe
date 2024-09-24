@@ -21,11 +21,12 @@
 
                                                 {{-- Product Price --}}
                                                 <p class="card-text">
-                                                    <strong>Price:</strong> ৳{{ number_format($product->product_price, 2) }}
+                                                    <strong>Price:</strong> ৳ <span
+                                                        id="">{{ number_format($product->product_price, 2) }}</span>
                                                 </p>
 
                                                 {{-- Quantity input based on Purchase Type --}}
-                                                <p class="card-text">
+                                                <p class="card-text q-quantity">
                                                     {{-- Quantity Display --}}
 
                                                     <strong>Quantity:</strong>
@@ -35,17 +36,21 @@
                                                             id="buy-now-quantity-{{ $product->product_id }}"
                                                             class="form-control quantity-input quantity-display"
                                                             data-unit-price="{{ $product->product_price }}"
-                                                            data-id="{{ $product->id }}">
+                                                            data-id="{{ $product->id }}"
+                                                            data-quantity="{{ $product->product_quantity }}">
                                                     @elseif ($product->purchase_type == 'schedule-buy')
                                                         <input type="number" value="{{ $product->product_quantity }}"
                                                             name="schedule-buy-quantity quantity-display"
                                                             id="schedule-buy-quantity-{{ $product->product_id }}"
                                                             class="form-control quantity-input"
                                                             data-unit-price="{{ $product->product_price }}"
-                                                            data-id="{{ $product->id }}">
+                                                            data-id="{{ $product->id }}"
+                                                            data-quantity="{{ $product->product_quantity }}">
                                                     @else
-                                                        <span class="quantity-input quantity-display"
+                                                        <span
+                                                            class="quantity-input quantity-display bulk-now-quantity-{{ $product->product_id }}"
                                                             data-unit-price="{{ $product->product_price }}"
+                                                            data-quantity="{{ $product->product_quantity }}"
                                                             data-id="{{ $product->id }}">{{ $product->product_quantity }}</span>
                                                     @endif
                                                 </p>
@@ -61,19 +66,26 @@
                                                 <p class="card-text">
                                                     <strong>Purchase Type:</strong>
                                                     <select name="purchase_type" id="purchase-type-{{ $product->id }}"
+                                                        data-unit-price="{{ $product->product_price }}"
+                                                        data-id="{{ $product->id }}"
+                                                        data-quantity="{{ $product->product_quantity }}"
                                                         class="form-select purchase_type">
                                                         <option value="buy-now"
                                                             {{ $product->purchase_type == 'buy-now' ? 'selected' : '' }}>
                                                             One-time Buy
                                                         </option>
-                                                        <option value="schedule-buy"
-                                                            {{ $product->purchase_type == 'schedule-buy' ? 'selected' : '' }}>
-                                                            Scheduled Buy
-                                                        </option>
-                                                        <option value="bulk"
-                                                            {{ $product->purchase_type == 'bulk' ? 'selected' : '' }}>
-                                                            Bulk One-Time Purchase
-                                                        </option>
+                                                        @if ($product->productDetails->is_subscribable)
+                                                            <option value="schedule-buy"
+                                                                {{ $product->purchase_type == 'schedule-buy' ? 'selected' : '' }}>
+                                                                Scheduled Buy
+                                                            </option>
+                                                        @endif
+                                                        @if ($product->productDetails->is_bundle)
+                                                            <option value="bulk"
+                                                                {{ $product->purchase_type == 'bulk' ? 'selected' : '' }}>
+                                                                Bulk One-Time Purchase
+                                                            </option>
+                                                        @endif
                                                     </select>
                                                 </p>
 
@@ -96,7 +108,7 @@
 
                                                 {{-- Bulk Purchase Details --}}
                                                 <!-- Purchase details section (hidden by default) -->
-                                                <div id="bulk-details-container-{{ $product->id }}" class="d-none">
+                                                <div id="bulk-details-container-{{ $product->id }}">
                                                     @if ($product->purchase_type == 'bulk')
                                                         <p class="card-text">
                                                             <strong>Purchase Details:</strong>
@@ -106,7 +118,9 @@
                                                                 );
                                                             @endphp
                                                             <select name="bulk-details"
-                                                                id="bulk-details-{{ $product->id }}" class="form-select">
+                                                                id="bulk-details-{{ $product->id }} "
+                                                                class="form-select bulk-option"
+                                                                data-id="{{ $product->id }}">
                                                                 @foreach ($bundleDetails as $index => $bundle)
                                                                     @php
                                                                         $totalOriginalPrice =
@@ -145,7 +159,7 @@
                                                     <p class="card-text">
                                                         <strong>Purchase Details:</strong>
                                                         <select name="schedule-details"
-                                                            id="schedule-details-{{ $loop->index }}" class="form-select">
+                                                            id="schedule-details-{{ $product->id }}" class="form-select">
                                                             @if ($product->productDetails->schedule_type === 'monthly')
                                                                 @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
                                                                     <option value="{{ $schedule['interval'] }}">
@@ -203,6 +217,7 @@
     @push('script')
         <script>
             $(document).ready(function() {
+                //chnage quantity live chnage price
                 $('.quantity-input').on('input', function() {
                     var quantity = $(this).val();
                     var unitPrice = $(this).data('unit-price');
@@ -210,41 +225,112 @@
                     var totalPrice = unitPrice * quantity;
                     $('#total-price-' + Id).text(totalPrice.toFixed(2));
                 });
+                //chnage purchase type
                 $('.purchase_type').on('change', function() {
                     const selectedValue = $(this).val();
-                    alert(selectedValue); // Alert the selected value for debugging
-                    const unitPrice = $(this).data('unit-price'); // Get the unit price from the dropdown
+                    const unitPrice = parseFloat($(this).data('unit-price')); // Convert to a number
                     const Id = $(this).data('id'); // Get the product ID from the dropdown
-
-                    // Get the quantity display span
+                    const quantity = $(this).data('quantity');
+                    // Find the quantity display span (specific to this product's card)
                     const quantityDisplay = $(this).closest('.card-body').find('.quantity-display');
-                    const quantity = quantityDisplay.text(); // Get the current quantity
 
-                    // Determine the HTML to replace the quantity display
                     let inputField;
 
                     if (selectedValue === 'buy-now' || selectedValue === 'schedule-buy') {
-                        // Create the input field HTML for both 'buy-now' and 'schedule-buy'
+                        // Create an input field for 'buy-now' or 'schedule-buy'
                         inputField = `
-            <input type="number" value="${quantity}" 
-                   name="${selectedValue}-quantity" 
-                   id="${selectedValue}-quantity-${Id}" 
-                   class="form-control quantity-input" 
-                   data-unit-price="${unitPrice}" 
-                   data-id="${Id}">
-        `;
-                    } else {
-                        // Restore the original quantity display for other purchase types
-                        inputField = `
-            <span class="quantity-display" 
-                  data-unit-price="${unitPrice}" 
-                  data-id="${Id}">${quantity}</span>
-        `;
-                    }
+                            <input type="number" value="1" 
+                                name="${selectedValue}-quantity" 
+                                id="${selectedValue}-quantity-${Id}" 
+                                class="form-control quantity-input quantity-display" 
+                                data-unit-price="${unitPrice}" 
+                                data-id="${Id}" data-quantity="${quantity}" min="1">
+                        `;
 
-                    // Replace the quantity display with the new input or span
-                    quantityDisplay.replaceWith(inputField);
+                        // Update total price when input is shown
+                        if ($('#total-price-' + Id).length) {
+                            $('#total-price-' + Id).text(unitPrice.toFixed(2));
+                        }
+
+                        // Listen for input change on quantity input
+                        $(document).on('input', `#${selectedValue}-quantity-${Id}`, function() {
+                            const newQuantity = $(this).val();
+                            const newTotalPrice = (unitPrice * newQuantity).toFixed(2);
+                            $('#total-price-' + Id).text(newTotalPrice);
+                        });
+
+                        // Hide bulk details
+                        $('#bulk-details-container-' + Id).hide();
+
+                    } else {
+
+                        $.ajax({
+                            url: '{{ route('cart.bundle.details') }}', // The URL to send the request to
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}', // Include the CSRF token for security
+                                id: Id,
+                            },
+                            success: function(response) {
+
+                                // Handle success response
+                                if (response.success) {
+                                    console.log(response.inputField);
+                                    $(quantityDisplay).replaceWith($(response.inputField));
+                                    $('#total-price-' + Id).text(response.totalPrice);
+                                    $('#bulk-details-container-' + Id).show();
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                // console.error(xhr.responseText);
+                                toastr.error('Failed to update bundle details for product ID: ' +
+                                    productId + '. Please try again.');
+                            }
+                        });
+                    }
+                    // Replace the quantity display with the inputField or span
+                    $(quantityDisplay).replaceWith($(inputField));
                 });
+                //sedn ajax request for get bundle detail
+                $('.bulk-option').on('change', function() {
+                    let quantity = $(this).val(); // Get the selected value (quantity)
+                    let Id = $(this).data('id'); // Extract the product ID from the select element's ID
+                    // alert(Id);
+                    // Send an AJAX request
+                    $.ajax({
+                        url: '{{ route('products.bundle.details') }}', // The URL to send the request to
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}', // Include the CSRF token for security
+                            id: Id,
+                            quantity: quantity
+                        },
+                        success: function(response) {
+                            // Handle success response
+                            if (response.success) {
+                                var quantitySpan = $('.bulk-now-quantity-' + response.id);
+                                var totalPriceSpan = $('#total-price-' + response.id);
+                                totalPriceSpan.text(response.bundle.after_discount);
+                                quantitySpan.text(response.bundle.quantity);
+                                quantitySpan.attr('data-unit-price', response.bundle.unit_price);
+                                quantitySpan.attr('data-quantity', response.bundle.quantity);
+
+                            } else {
+                                toastr.success(response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle error
+                            console.error(xhr.responseText);
+                            alert('Failed to update bundle details for product ID: ' + productId +
+                                '. Please try again.');
+                        }
+                    });
+                });
+
+
 
             });
         </script>
