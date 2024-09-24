@@ -131,9 +131,8 @@
                                                                                 $totalOriginalPrice -
                                                                                 $bundle->after_discount;
                                                                         } elseif ($bundle->type == 'fixed') {
-                                                                            $savings =
-                                                                                $bundle->discount_amount *
-                                                                                $bundle->quantity;
+                                                                            $savings =$totalOriginalPrice -
+                                                                            $bundle->after_discount;
                                                                             $percentageSaved = round(
                                                                                 ($savings / $totalOriginalPrice) * 100,
                                                                             );
