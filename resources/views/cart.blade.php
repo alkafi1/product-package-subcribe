@@ -118,7 +118,7 @@
                                                                 );
                                                             @endphp
                                                             <select name="bulk-details"
-                                                                id="bulk-details-{{ $product->id }} "
+                                                                id="bulk-details-{{ $product->id }}"
                                                                 class="form-select bulk-option"
                                                                 data-id="{{ $product->id }}">
                                                                 @foreach ($bundleDetails as $index => $bundle)
@@ -275,10 +275,15 @@
 
                                 // Handle success response
                                 if (response.success) {
-                                    console.log(response.inputField);
                                     $(quantityDisplay).replaceWith($(response.inputField));
                                     $('#total-price-' + Id).text(response.totalPrice);
+                                    // Select the bulk details select
+                                    var bulkDetailsSelect = $('#bulk-details-' + response.id);
+                                    var valueToSelect = response.quantity;
+                                    bulkDetailsSelect.val(valueToSelect);
+                                    bulkDetailsSelect.trigger('change');
                                     $('#bulk-details-container-' + Id).show();
+
                                 } else {
                                     toastr.error(response.message);
                                 }
@@ -291,47 +296,45 @@
                         });
                     }
                     // Replace the quantity display with the inputField or span
-                    $(quantityDisplay).replaceWith($(inputField));
+                    if (inputField) {
+                        $(quantityDisplay).replaceWith(inputField);
+                    }
                 });
                 //sedn ajax request for get bundle detail
                 $('.bulk-option').on('change', function() {
-                    let quantity = $(this).val(); // Get the selected value (quantity)
-                    let Id = $(this).data('id'); // Extract the product ID from the select element's ID
-                    // alert(Id);
-                    // Send an AJAX request
+                    let quantity = $(this).val();
+                    let Id = $(this).data('id');
                     $.ajax({
-                        url: '{{ route('products.bundle.details') }}', // The URL to send the request to
+                        url: '{{ route('products.bundle.details') }}',
                         type: 'POST',
                         data: {
-                            _token: '{{ csrf_token() }}', // Include the CSRF token for security
+                            _token: '{{ csrf_token() }}',
                             id: Id,
                             quantity: quantity
                         },
                         success: function(response) {
-                            // Handle success response
                             if (response.success) {
-                                var quantitySpan = $('.bulk-now-quantity-' + response.id);
                                 var totalPriceSpan = $('#total-price-' + response.id);
-                                totalPriceSpan.text(response.bundle.after_discount);
+                                totalPriceSpan.text(response.afterDiscount);
+
+                                var quantitySpan = $('.bulk-now-quantity-' + response.id);
                                 quantitySpan.text(response.bundle.quantity);
                                 quantitySpan.attr('data-unit-price', response.bundle.unit_price);
                                 quantitySpan.attr('data-quantity', response.bundle.quantity);
+
 
                             } else {
                                 toastr.success(response.message);
                             }
                         },
                         error: function(xhr, status, error) {
-                            // Handle error
                             console.error(xhr.responseText);
-                            alert('Failed to update bundle details for product ID: ' + productId +
+                            toastr.error('Failed to update bundle details for product ID: ' +
+                                productId +
                                 '. Please try again.');
                         }
                     });
                 });
-
-
-
             });
         </script>
     @endpush

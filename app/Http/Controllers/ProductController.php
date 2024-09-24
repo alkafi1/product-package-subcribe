@@ -323,10 +323,15 @@ class ProductController extends Controller
             $matchedBundle = collect($bundleDetails)->firstWhere('quantity', $request->quantity);
 
             if ($matchedBundle) {
+                $quantity = $matchedBundle['quantity'];
+                $afterDiscount = number_format($matchedBundle['after_discount'], 2);
+                $productPrice = number_format($matchedBundle['product_price'], 2);
                 return response()->json([
                     'success' => true,
                     'id' => $request->id,
                     'bundle' => $matchedBundle,
+                    'afterDiscount' => $afterDiscount,
+                    'productPrice' => $productPrice,
                 ]);
             } else {
                 // If no matching bundle is found
@@ -363,20 +368,23 @@ class ProductController extends Controller
             $productPrice = number_format($bundleDetails['product_price'], 2);  // Adjust field names as necessary
 
             // Build HTML similar to the inputField format
-            $inputField = '
-            <span class="quantity-input quantity-display" 
-                data-unit-price="' . $productPrice . '" 
-                data-id="' . $cart->id . '" 
-                data-quantity="' . $quantity . '">
-                ' . $quantity . '
-            </span>
-        ';
+            $inputField = "
+                <span class=\"quantity-input quantity-display bulk-now-quantity-{$cart->id}\" 
+                    data-unit-price=\"{$productPrice}\" 
+                    data-id=\"{$cart->id}\" 
+                    data-quantity=\"{$quantity}\">
+                    {$quantity}
+                </span>
+            ";
 
             // Return the generated HTML and other relevant data
             return response()->json([
                 'success' => true,
                 'inputField' => $inputField,
-                'totalPrice' => $afterDiscount,  // You can return total price separately if needed
+                'totalPrice' => $afterDiscount, 
+                'quantity' => $quantity, 
+                'id' => $request->id, 
+                
             ]);
         } else {
             return response()->json([
