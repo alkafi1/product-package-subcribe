@@ -13,4 +13,6 @@ Route::post('/order', [ProductController::class, 'order'])->name('products.order
 Route::post('/add-cart', [ProductController::class, 'addCart'])->name('products.cart');
 Route::get('/add-cart', [ProductController::class, 'cartShow'])->name('products.cart.show');
 Route::get('/delete-cart/{id}', [ProductController::class, 'cartDelete'])->name('products.cart.delete');
+Route::post('/product-bundle-details', [ProductController::class, 'productBundleDetails'])->name('products.bundle.details');
+Route::post('/cart-bundle-details', [ProductController::class, 'cartBundleDetails'])->name('cart.bundle.details');
 

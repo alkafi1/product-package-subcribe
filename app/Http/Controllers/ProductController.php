@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\ProductOrder;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
 
@@ -27,17 +27,13 @@ class ProductController extends Controller
         return view('shop', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         $rules = [
@@ -129,9 +125,7 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product created successfully!');
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         $product = Product::findOrFail($id);
@@ -139,30 +133,24 @@ class ProductController extends Controller
         return view('details', compact('product', 'products'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
         //
     }
-    
+
     //cart
     public function addCart(Request $request)
     {
@@ -191,11 +179,11 @@ class ProductController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        
+
         $product = Product::findOrFail($request->product_id);
-        
+
         $existProduct = ProductCart::where('product_id', $request->product_id)->first();
-        
+
         if ($existProduct) {
             return redirect()->back()
                 ->withErrors(['product' => 'The product is already in the cart.'])
@@ -321,5 +309,80 @@ class ProductController extends Controller
             'purchase_type_details' => $purchaseTypeDetails,
         ]);
         return redirect()->back()->with('success', 'Product ordered successfully!');
+    }
+
+    //ajax
+    public function productBundleDetails(Request $request)
+    {
+        try {
+            $cart = ProductCart::findOrFail($request->id);
+            $product = Product::findOrFail($cart->product_id);
+
+            $bundleDetails = json_decode($product->bundle_details, true);
+
+            $matchedBundle = collect($bundleDetails)->firstWhere('quantity', $request->quantity);
+
+            if ($matchedBundle) {
+                return response()->json([
+                    'success' => true,
+                    'id' => $request->id,
+                    'bundle' => $matchedBundle,
+                ]);
+            } else {
+                // If no matching bundle is found
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No bundle found for the specified quantity.',
+                ], 404);
+            }
+        } catch (ModelNotFoundException $e) {
+            // If the product or cart is not found
+            return response()->json([
+                'success' => false,
+                'message' => 'Product or Cart not found.',
+            ], 404);
+        } catch (Exception $e) {
+            // Handle any other exceptions
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function cartBundleDetails(Request $request)
+    {
+        // Find the cart and decode the purchase type details
+        $cart = ProductCart::findOrFail($request->id);
+        $bundleDetails = json_decode($cart->purchase_type_details, true);
+
+        // Check if bundle details exist
+        if ($bundleDetails) {
+            // Extract values
+            $quantity = $bundleDetails['quantity'];  // Adjust field names as per your structure
+            $afterDiscount = number_format($bundleDetails['after_discount'], 2);  // Ensure it's formatted properly
+            $productPrice = number_format($bundleDetails['product_price'], 2);  // Adjust field names as necessary
+
+            // Build HTML similar to the inputField format
+            $inputField = '
+            <span class="quantity-input quantity-display" 
+                data-unit-price="' . $productPrice . '" 
+                data-id="' . $cart->id . '" 
+                data-quantity="' . $quantity . '">
+                ' . $quantity . '
+            </span>
+        ';
+
+            // Return the generated HTML and other relevant data
+            return response()->json([
+                'success' => true,
+                'inputField' => $inputField,
+                'totalPrice' => $afterDiscount,  // You can return total price separately if needed
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bundle details not found.',
+            ]);
+        }
     }
 }

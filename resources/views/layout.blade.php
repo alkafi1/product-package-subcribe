@@ -2,267 +2,42 @@
 <html lang="en">
 
 <head>
+    <!-- Character Encoding -->
     <meta charset="UTF-8">
+
+    <!-- Viewport for Responsive Design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details</title>
+
+    <!-- Title (shown in browser tab) -->
+    <title>Your Page Title</title>
+
+    <!-- Description for SEO -->
+    <meta name="description" content="Brief description of your page for SEO purposes.">
+
+    <!-- Keywords for SEO (optional, not widely used by search engines anymore) -->
+    <meta name="keywords" content="Keyword1, Keyword2, Keyword3">
+
+    <!-- Author Info -->
+    <meta name="author" content="Your Name or Company Name">
+
+    <!-- Robots Meta Tag for SEO -->
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph (OG) Tags for Social Sharing -->
+    <meta property="og:title" content="Your Page Title">
+    <meta property="og:description" content="Brief description of your page for social sharing.">
+    <meta property="og:image" content="URL-to-your-image.jpg">
+    <meta property="og:url" content="https://yourwebsite.com/page">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Tags for Twitter Sharing -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Your Page Title">
+    <meta name="twitter:description" content="Brief description of your page for Twitter.">
+    <meta name="twitter:image" content="URL-to-your-image.jpg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .product-image img {
-            max-width: 100%;
-            height: auto;
-        }
 
-        .product-price {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .product-description {
-            margin-top: 20px;
-        }
-
-        .quantity {
-            width: 70px;
-        }
-
-        .btn-buy {
-            background-color: #28a745;
-            color: white;
-            transition: border-color 0.3s ease;
-            border: 2px solid transparent;
-            /* Default border */
-        }
-
-        .btn-buy:hover {
-            border-color: #28a745;
-            /* Green border on hover */
-            background-color: transparent;
-            /* Optional: make background transparent on hover */
-            color: #28a745;
-            /* Change text color to green on hover */
-        }
-
-        .purchase-option {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .purchase-option:hover {
-            background-color: #f9f9f9;
-        }
-
-        .purchase-option input[type="radio"] {
-            display: none;
-            /* Hide radio buttons */
-        }
-
-        .purchase-option label {
-            display: block;
-            padding: 10px;
-            /* Space for clickable area */
-        }
-
-        .purchase-option.active {
-            border: 2px solid #28a745;
-            /* Green border for the entire card */
-        }
-
-        .bulk-option-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .bulk-option-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .bulk-option-card input[type="radio"] {
-            display: none;
-            /* Hide radio buttons */
-        }
-
-        .bulk-option-card label {
-            display: block;
-            padding: 10px;
-            /* Space for clickable area */
-        }
-
-        .bulk-option-card input[type="radio"]:checked+label {
-            border: 2px solid #28a745;
-            /* Green border for selected bulk option */
-            background-color: #f9f9f9;
-            /* Optional: background color for selected */
-        }
-
-        .product-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-        }
-
-        .product-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-color: #28a745;
-            /* Green border on hover */
-        }
-
-        .product-image img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            /* Makes the image scale properly */
-            border-bottom: 1px solid #ddd;
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .product-price {
-            font-size: 16px;
-            color: #28a745;
-            margin-bottom: 10px;
-        }
-
-        .product-description {
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .rating {
-            font-size: 14px;
-            color: #ffc107;
-            /* Gold color for stars */
-        }
-
-        .btn-buy {
-            background-color: #28a745;
-            color: white;
-            border: 1px solid transparent;
-            transition: border-color 0.3s ease;
-        }
-
-        .btn-buy:hover {
-            border-color: #28a745;
-            /* Green border on hover */
-        }
-
-        .nav-link {
-            color: #fff !important;
-        }
-
-        /* Set the height of the carousel images */
-        .carousel-image {
-            height: 500px;
-            object-fit: cover;
-        }
-
-        /* Background animation for the section */
-        .animated-section {
-            height: 50px;
-            padding-top: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(270deg, #ffafbd, #ffc3a0, #ffafbd);
-            background-size: 600% 600%;
-            animation: backgroundAnimation 6s ease infinite;
-            border: 5px solid transparent;
-            /* Initial transparent border */
-            border-radius: 5px;
-            /* Optional: add rounded corners */
-            position: relative;
-            /* Positioning for the inner border effect */
-        }
-
-        /* Background animation for the section */
-        .animated-section {
-            height: 50px;
-            padding-top: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: url('https://c.myholidays.com/blog/blog/content/images/2020/09/Shopping-In-Qatar-The-Top-10-Souvenirs-To-Buy-From-Qatar.webp');
-            /* Set your graphical image here */
-            background-size: cover;
-            /* Cover the entire section */
-            background-position: center;
-            /* Center the image */
-            position: relative;
-            overflow: hidden;
-            /* Ensure the border stays within bounds */
-        }
-
-        /* Inner border effect */
-        .animated-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 5px solid transparent;
-            /* Initial transparent border */
-            border-radius: 5px;
-            z-index: -1;
-            /* Place behind the text */
-            animation: borderAnimation 6s linear infinite;
-            /* Border animation */
-            background-image: linear-gradient(0deg, #ffafbd, #ffc3a0, #ffafbd);
-            /* Gradient for color rotation */
-            background-size: 200% 200%;
-            /* Ensure the gradient moves */
-        }
-
-        /* Text inside the animated background */
-        .animated-section h2 {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        /* Keyframes for border animation with rotation */
-        @keyframes borderAnimation {
-            0% {
-                transform: rotate(0deg);
-                background-position: 0% 50%;
-            }
-
-            25% {
-                transform: rotate(90deg);
-                background-position: 100% 50%;
-            }
-
-            50% {
-                transform: rotate(180deg);
-                background-position: 100% 50%;
-            }
-
-            75% {
-                transform: rotate(270deg);
-                background-position: 0% 50%;
-            }
-
-            100% {
-                transform: rotate(360deg);
-                background-position: 0% 50%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('\public\assets\css\style.css') }}">
 </head>
 
 <body>
