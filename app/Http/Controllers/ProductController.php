@@ -238,6 +238,94 @@ class ProductController extends Controller
         $total_cart_price = number_format($products->sum('product_total_price'), 2);
         return view('cart', compact('products', 'total_cart_price'));
     }
+
+    public function cartUpdate(Request $request)
+    {
+
+
+        // Define validation rules
+        $rules = [
+            'id' => 'required|exists:product_carts,id', // Ensure the cart ID exists
+            // 'schedule_type' => 'required|string|in:monthly,days', // Validate schedule_type as either 'monthly' or 'days'
+            // 'product_quantity' => 'required|integer|min:1', // Ensure quantity is a positive integer
+        ];
+        if ($request->input('purchase_type') == 'buy-now') {
+            $rules['buy-now-quantity'] = 'required';
+        } elseif ($request->input('purchase_type') == 'schedule-buy') {
+            $rules['schedule-buy-quantity_'] = 'required';
+        } else {
+            $rules['bulk-details'] = 'required';
+        }
+        // Define custom error messages (optional)
+        $messages = [
+            'id.required' => 'The cart ID is required.',
+            'id.exists' => 'The specified cart item does not exist.',
+            'buy-now-quantity.required' => 'The Quantity is required.',
+            'schedule-buy-quantity_.required' => 'The Quantity is required.',
+            'bulk-details.required' => 'The Quantity is required.',
+        ];
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422); // Return 422 Unprocessable Entity for validation errors
+        }
+        // return $request->all();
+        $cart = ProductCart::findOrFail($request->id);
+
+        $cart->update([
+            'purchase_type' => $request->input('purchase_type'),
+        ]);
+        if ($request->input('purchase_type') == 'buy-now') {
+            $totalPrice = $request->input('buy-now-quantity') * $cart->product_price;
+            $cart->update([
+                'product_quantity' => $request->input('buy-now-quantity'),
+                'product_total_price' => $totalPrice,
+                'schedule_type' => null,
+                'purchase_type_details' => null,
+            ]);
+        } elseif ($request->input('purchase_type') == 'schedule-buy') {
+            $schedule = $cart->productDetails->schedule;
+            $scheduleArray = json_decode($schedule, true);
+            $val = $request->input('schedule-details');
+            $filteredSchedules = array_filter($scheduleArray, function ($item) use ($val) {
+                return isset($item['interval']) && $item['interval'] == $val; // Ensure the key exists before comparing
+            });
+            $filteredSchedules = json_encode(array_values($filteredSchedules));
+            $totalPrice = $request->input('schedule-buy-quantity_') * $cart->product_price;
+            $cart->update([
+                'product_quantity' => $request->input('schedule-buy-quantity_'),
+                'product_total_price' => $totalPrice,
+                'schedule_type' => $request->input('schedule_type'),
+                'purchase_type_details' => $filteredSchedules,
+            ]);
+        } else {
+            $bundle = $cart->productDetails->bundle_details;
+            $bundleArray = json_decode($bundle, true);
+            $val = $request->input('bulk-details');
+            $filteredBundle = array_filter($bundleArray, function ($item) use ($val) {
+                return isset($item['quantity']) && $item['quantity'] == $val; // Ensure the key exists before comparing
+            });
+            $filteredBundles = json_encode(array_values($filteredBundle));
+            $totalPrice = array_values($filteredBundle)[0]['after_discount'];
+            $cart->update([
+                'product_quantity' => $request->input('bulk-details'),
+                'purchase_type_details' => $filteredBundles,
+                'product_total_price' => $totalPrice,
+                'schedule_type' => null,
+            ]);
+            $rules['bulk-details'] = 'required';
+        }
+        $total_cart_price = ProductCart::sum('product_total_price');
+        return response()->json([
+            'success' => true,
+            'total_cart_price' => $total_cart_price,
+            'message' => 'Cart Product Update successfully !'
+        ]);
+    }
     public function cartDelete($id)
     {
         $products = ProductCart::findOrFail($id)->delete();
@@ -359,14 +447,22 @@ class ProductController extends Controller
     {
         // Find the cart and decode the purchase type details
         $cart = ProductCart::findOrFail($request->id);
-        $bundleDetails = json_decode($cart->purchase_type_details, true);
 
         // Check if bundle details exist
-        if ($bundleDetails) {
+        if ($cart->purchase_type == 'bulk') {
             // Extract values
-            $quantity = $bundleDetails['quantity'];  // Adjust field names as per your structure
-            $afterDiscount = number_format($bundleDetails['after_discount'], 2);  // Ensure it's formatted properly
-            $productPrice = number_format($bundleDetails['product_price'], 2);  // Adjust field names as necessary
+            $bundleDetails = json_decode($cart->purchase_type_details, true);
+            // Check if $bundleDetails is not empty and is an array
+            if (!empty($bundleDetails) && is_array($bundleDetails)) {
+                // Iterate over each bundle detail
+                foreach ($bundleDetails as $detail) {
+                    // Access the fields for each bundle detail
+                    $quantity = $detail['quantity'];  // Access quantity
+                    $afterDiscount = number_format($detail['after_discount'], 2);  // Format after_discount
+                    $productPrice = number_format($detail['product_price'], 2);  // Format product_price
+                }
+            }
+            
 
             // Build HTML similar to the inputField format
             $inputField = "
@@ -388,11 +484,11 @@ class ProductController extends Controller
                 'find' => true,
             ]);
         } else {
-            $productbundleDetails=json_decode($cart->productDetails->bundle_details, true);
+            $productbundleDetails = json_decode($cart->productDetails->bundle_details, true);
             $quantity = $productbundleDetails[0]['quantity'];  // Adjust field names as per your structure
             $afterDiscount = number_format($productbundleDetails[0]['after_discount'], 2);  // Ensure it's formatted properly
             $productPrice = number_format($productbundleDetails[0]['product_price'], 2);
-            
+
             $inputField = "
                 <span class=\"quantity-input quantity-display bulk-now-quantity-{$cart->id}\" 
                     data-unit-price=\"{$productPrice}\" 
@@ -417,7 +513,7 @@ class ProductController extends Controller
         $product_schedule_details = json_decode($cart->purchase_type_details, true);
         $inputField = "
                     <input type=\"number\" value=\"$cart->product_quantity\" 
-                        name=\"schedule-buy-quantity \" 
+                        name=\"schedule-buy-quantity\" 
                         id=\"schedule-buy-quantity-{$request->id}\" 
                         class=\"form-control quantity-input quantity-display\" 
                         data-unit-price=\"{$cart->product_price}\" 

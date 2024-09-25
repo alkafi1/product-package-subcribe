@@ -13,9 +13,8 @@
                         <div class="row">
                             @forelse ($products as $product)
                                 <div class="col-md-3 mb-4">
-                                    <form action="{{ route('products.cart.update', $product->id) }}" method="POST"
-                                        class="product-form " id="product-cart-{{ $product->id }}">
-                                        @csrf
+                                    <form action="" method="POST" class="product-form "
+                                        id="product-cart-{{ $product->id }}">
                                         <div class="card shadow-sm border">
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ $product->productDetails->name }}</h5>
@@ -99,6 +98,7 @@
                                                     {{-- @if ($product->purchase_type == 'bulk') --}}
                                                     <p class="card-text">
                                                         <strong>Purchase Details:</strong>
+                                                        @if ($product->productDetails->is_bundle)
                                                         @php
                                                             $bundleDetails = json_decode(
                                                                 $product->productDetails->bundle_details,
@@ -135,23 +135,23 @@
                                                                 </option>
                                                             @endforeach
                                                         </select>
+                                                        @endif
                                                     </p>
                                                     {{-- @endif --}}
                                                 </div>
 
 
                                                 {{-- Schedule Type (only for scheduled buys) --}}
-                                                {{ $product->schedule_type }}
                                                 <div id="schedule-details-container-{{ $product->id }}"
                                                     style="display: {{ $product->schedule_type == null ? 'none' : '' }};">
                                                     {{-- @if ($product->schedule_type) --}}
                                                     <p class="card-text">
                                                         <strong>Schedule Type:</strong>
                                                         <select class="form-select schedule_type" name="schedule_type"
-                                                            id="schedule_type-{{ $product->id }}" >
-                                                            <option value="{{ $product->schedule_type == 'monthly' ? 'monthly' : 'days' }}"
-                                                                >
-                                                                {{ $product->schedule_type == 'monthly' ? 'Monthly' : 'Days' }}
+                                                            id="schedule_type-{{ $product->id }}">
+                                                            <option
+                                                                value="{{ $product->productDetails->schedule_type == 'monthly' ? 'monthly' : 'days' }}">
+                                                                {{ $product->productDetails->schedule_type == 'monthly' ? 'Monthly' : 'Days' }}
                                                             </option>
                                                         </select>
                                                     </p>
@@ -220,7 +220,7 @@
                         <div class="text-center w-100">
                             <h5 class="mb-0 font-weight-bold">
                                 Total Cart Price:
-                                <span class="text-success">৳{{ $total_cart_price }}</span>
+                                <span class="text-success" >৳</span> <span class="text-success" id="total_cart_price">{{ $total_cart_price }}</span>
                             </h5>
                         </div>
 
@@ -246,7 +246,6 @@
                     var unitPrice = $(this).data('unit-price');
                     var Id = $(this).data('id');
                     var totalPrice = unitPrice * quantity;
-                    alert()
                     $('#total-price-' + Id).text(totalPrice.toFixed(2));
                 });
                 //chnage purchase type
@@ -342,8 +341,8 @@
                             },
                             error: function(xhr, status, error) {
                                 // console.error(xhr.responseText);
-                                toastr.error('Failed to find schedule details for product ID: ' +
-                                    productId + '. Please try again.');
+                                // toastr.error('Failed to find schedule details for product ID: ' +
+                                //     productId + '. Please try again.');
                             }
                         });
                     } else {
@@ -373,9 +372,9 @@
                                 }
                             },
                             error: function(xhr, status, error) {
-                                // console.error(xhr.responseText);
-                                toastr.error('Failed to update bundle details for product ID: ' +
-                                    productId + '. Please try again.');
+                                console.error(xhr.responseText);
+                                // toastr.error('Failed to update bundle details for product ID: ' +
+                                //     productId + '. Please try again.');
                             }
                         });
                     }
@@ -420,39 +419,47 @@
                         }
                     });
                 });
-
-                // update cart prodcut ajax
-                $(document).on('click', '.update-cart', function() {
-                    // Get the data-id attribute from the clicked element
+                $('.update-cart').on('click', function(e) {
+                    e.preventDefault();
                     var Id = $(this).data('id');
+                    let form = $('#product-cart-' + Id)[0];
 
-                    // Alert the user with the product ID
-                    alert('Cart ID: ' + Id);
-
-                    // Get the form data associated with the product
-                    var formId = 'product-cart-' + productId; // Assuming your form ID follows this pattern
-                    var formData = $('#' + formId).serialize(); // Serialize form data
-
-                    // Example of how to do something with the form data
-                    console.log('Form Data:', formData);
+                    // Create a FormData object
+                    let formData = new FormData(form);
+                    formData.append('id', Id);
+                    formData.append('_token', '{{ csrf_token() }}');
 
                     // You can also make an AJAX request here to update the cart if needed
-                    // $.ajax({
-                    //     url: 'your-update-url', // Update with the actual URL for updating the cart
-                    //     type: 'POST',
-                    //     data: {
-                    //         _token: '{{ csrf_token() }}', // Include CSRF token
-                    //         productId: productId,
-                    //         formData: formData
-                    //     },
-                    //     success: function(response) {
-                    //         // Handle success response
-                    //     },
-                    //     error: function(xhr, status, error) {
-                    //         // Handle error response
-                    //     }
-                    // });
+                    $.ajax({
+                        url: '{{ route('products.cart.update') }}',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            console.log(response);
+                            if (response.success) {
+                                $('#total_cart_price').text(response.total_cart_price);
+                                toastr.success(response.message);
+                            } else {
+                                $.each(response.errors, function(key, errorMessages) {
+                                    $.each(errorMessages, function(index, message) {
+                                        toastr.error(message);
+                                    });
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            var errors = xhr.responseJSON.errors;
+                            // Iterate through each error and display it
+                            $.each(errors, function(key, value) {
+                                console.log(key, value);
+                                toastr.error(value); // Displaying each error message
+                            });
+                        }
+                    });
                 });
+
             });
         </script>
     @endpush

@@ -13,7 +13,7 @@ Route::post('/order', [ProductController::class, 'order'])->name('products.order
 Route::post('/add-cart', [ProductController::class, 'addCart'])->name('products.cart');
 Route::get('/add-cart', [ProductController::class, 'cartShow'])->name('products.cart.show');
 Route::get('/delete-cart/{id}', [ProductController::class, 'cartDelete'])->name('products.cart.delete');
-Route::get('/update-cart/{id}', [ProductController::class, 'cartUpdate'])->name('products.cart.update');
+Route::post('/update-cart', [ProductController::class, 'cartUpdate'])->name('products.cart.update');
 Route::post('/product-bundle-details', [ProductController::class, 'productBundleDetails'])->name('products.bundle.details');
 Route::post('/cart-bundle-details', [ProductController::class, 'cartBundleDetails'])->name('cart.bundle.details');
 Route::post('/cart-schedule-details', [ProductController::class, 'cartScheduleDetails'])->name('cart.schedule.details');
