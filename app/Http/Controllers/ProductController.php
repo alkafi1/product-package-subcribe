@@ -528,6 +528,5 @@ class ProductController extends Controller
             'inputField' => $inputField,
             'id' => $request->id,
         ]);
-        return $request->all();
     }
 }
