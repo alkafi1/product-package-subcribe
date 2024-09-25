@@ -15,4 +15,5 @@ Route::get('/add-cart', [ProductController::class, 'cartShow'])->name('products.
 Route::get('/delete-cart/{id}', [ProductController::class, 'cartDelete'])->name('products.cart.delete');
 Route::post('/product-bundle-details', [ProductController::class, 'productBundleDetails'])->name('products.bundle.details');
 Route::post('/cart-bundle-details', [ProductController::class, 'cartBundleDetails'])->name('cart.bundle.details');
+Route::post('/cart-schedule-details', [ProductController::class, 'cartScheduleDetails'])->name('cart.schedule.details');
 

@@ -381,10 +381,10 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'inputField' => $inputField,
-                'totalPrice' => $afterDiscount, 
-                'quantity' => $quantity, 
-                'id' => $request->id, 
-                
+                'totalPrice' => $afterDiscount,
+                'quantity' => $quantity,
+                'id' => $request->id,
+
             ]);
         } else {
             return response()->json([
@@ -392,5 +392,28 @@ class ProductController extends Controller
                 'message' => 'Bundle details not found.',
             ]);
         }
+    }
+    public function cartScheduleDetails(Request $request)
+    {
+        $cart = ProductCart::findOrFail($request->id);
+        $product_schedule_details = json_decode($cart->purchase_type_details, true);
+        $inputField = "
+                    <input type=\"number\" value=\"$cart->product_quantity\" 
+                        name=\"schedule-buy-quantity \" 
+                        id=\"schedule-buy-quantity-{$request->id}\" 
+                        class=\"form-control quantity-input quantity-display\" 
+                        data-unit-price=\"{$cart->product_price}\" 
+                        data-id=\"{$request->id}\" 
+                        data-quantity=\"{$cart->product_quantity}\" 
+                        min=\"1\">
+                ";
+        return response()->json([
+            'success' => true,
+            'cart' => $cart,
+            'product_schedule_details' => $product_schedule_details,
+            'inputField' => $inputField,
+            'id' => $request->id,
+        ]);
+        return $request->all();
     }
 }

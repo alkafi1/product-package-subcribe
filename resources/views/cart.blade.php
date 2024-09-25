@@ -40,9 +40,9 @@
                                                             data-quantity="{{ $product->product_quantity }}">
                                                     @elseif ($product->purchase_type == 'schedule-buy')
                                                         <input type="number" value="{{ $product->product_quantity }}"
-                                                            name="schedule-buy-quantity quantity-display"
+                                                            name="schedule-buy-quantity "
                                                             id="schedule-buy-quantity-{{ $product->product_id }}"
-                                                            class="form-control quantity-input"
+                                                            class="form-control quantity-input quantity-display"
                                                             data-unit-price="{{ $product->product_price }}"
                                                             data-id="{{ $product->id }}"
                                                             data-quantity="{{ $product->product_quantity }}">
@@ -89,22 +89,7 @@
                                                     </select>
                                                 </p>
 
-                                                {{-- Schedule Type (only for scheduled buys) --}}
-                                                @if ($product->schedule_type)
-                                                    <p class="card-text">
-                                                        <strong>Schedule Type:</strong>
-                                                        <select class="form-select schedule_type" name="schedule_type">
-                                                            <option value="monthly"
-                                                                {{ $product->schedule_type == 'monthly' ? 'selected' : '' }}>
-                                                                Monthly
-                                                            </option>
-                                                            <option value="days"
-                                                                {{ $product->schedule_type == 'days' ? 'selected' : '' }}>
-                                                                Days
-                                                            </option>
-                                                        </select>
-                                                    </p>
-                                                @endif
+
 
                                                 {{-- Bulk Purchase Details --}}
                                                 <!-- Purchase details section (hidden by default) -->
@@ -131,8 +116,9 @@
                                                                                 $totalOriginalPrice -
                                                                                 $bundle->after_discount;
                                                                         } elseif ($bundle->type == 'fixed') {
-                                                                            $savings =$totalOriginalPrice -
-                                                                            $bundle->after_discount;
+                                                                            $savings =
+                                                                                $totalOriginalPrice -
+                                                                                $bundle->after_discount;
                                                                             $percentageSaved = round(
                                                                                 ($savings / $totalOriginalPrice) * 100,
                                                                             );
@@ -153,30 +139,51 @@
                                                     @endif
                                                 </div>
 
-                                                {{-- Schedule Purchase Details --}}
-                                                @if ($product->purchase_type == 'schedule-buy')
-                                                    <p class="card-text">
-                                                        <strong>Purchase Details:</strong>
-                                                        <select name="schedule-details"
-                                                            id="schedule-details-{{ $product->id }}" class="form-select">
-                                                            @if ($product->productDetails->schedule_type === 'monthly')
-                                                                @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
-                                                                    <option value="{{ $schedule['interval'] }}">
-                                                                        Every {{ $schedule['interval'] }} month (Day
-                                                                        {{ $schedule['day'] }})
-                                                                    </option>
-                                                                @endforeach
-                                                            @elseif ($product->productDetails->schedule_type === 'days')
-                                                                @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
-                                                                    <option value="{{ $schedule['interval'] }}">
-                                                                        Every {{ $schedule['interval'] }} day(s) (Day
-                                                                        {{ $schedule['day'] }})
-                                                                    </option>
-                                                                @endforeach
-                                                            @endif
-                                                        </select>
-                                                    </p>
-                                                @endif
+
+                                                {{-- Schedule Type (only for scheduled buys) --}}
+                                                <div id="schedule-details-container-{{ $product->id }}">
+                                                    @if ($product->schedule_type)
+                                                        <p class="card-text">
+                                                            <strong>Schedule Type:</strong>
+                                                            <select class="form-select schedule_type" name="schedule_type"
+                                                                id="schedule_type-{{ $product->id }}">
+                                                                <option value="monthly"
+                                                                    {{ $product->schedule_type == 'monthly' ? 'selected' : '' }}>
+                                                                    Monthly
+                                                                </option>
+                                                                <option value="days"
+                                                                    {{ $product->schedule_type == 'days' ? 'selected' : '' }}>
+                                                                    Days
+                                                                </option>
+                                                            </select>
+                                                        </p>
+                                                    @endif
+                                                    {{-- Schedule Purchase Details --}}
+                                                    @if ($product->purchase_type == 'schedule-buy')
+                                                        <p class="card-text">
+                                                            <strong>Purchase Details:</strong>
+                                                            <select name="schedule-details"
+                                                                id="schedule-details-{{ $product->id }}"
+                                                                class="form-select">
+                                                                @if ($product->productDetails->schedule_type === 'monthly')
+                                                                    @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
+                                                                        <option value="{{ $schedule['interval'] }}">
+                                                                            Every {{ $schedule['interval'] }} month (Day
+                                                                            {{ $schedule['day'] }})
+                                                                        </option>
+                                                                    @endforeach
+                                                                @elseif ($product->productDetails->schedule_type === 'days')
+                                                                    @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
+                                                                        <option value="{{ $schedule['interval'] }}">
+                                                                            Every {{ $schedule['interval'] }} day(s) (Day
+                                                                            {{ $schedule['day'] }})
+                                                                        </option>
+                                                                    @endforeach
+                                                                @endif
+                                                            </select>
+                                                        </p>
+                                                    @endif
+                                                </div>
                                             </div>
 
                                             {{-- Card Footer with Action Buttons --}}
@@ -222,6 +229,7 @@
                     var unitPrice = $(this).data('unit-price');
                     var Id = $(this).data('id');
                     var totalPrice = unitPrice * quantity;
+                    alert()
                     $('#total-price-' + Id).text(totalPrice.toFixed(2));
                 });
                 //chnage purchase type
@@ -235,7 +243,7 @@
 
                     let inputField;
 
-                    if (selectedValue === 'buy-now' || selectedValue === 'schedule-buy') {
+                    if (selectedValue === 'buy-now') {
                         // Create an input field for 'buy-now' or 'schedule-buy'
                         inputField = `
                             <input type="number" value="1" 
@@ -260,7 +268,64 @@
 
                         // Hide bulk details
                         $('#bulk-details-container-' + Id).hide();
+                        $('#schedule-details-container-' + Id).hide();
 
+                    } else if (selectedValue === 'schedule-buy') {
+
+                        $.ajax({
+                            url: '{{ route('cart.schedule.details') }}', // The URL to send the request to
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}', // Include the CSRF token for security
+                                id: Id,
+                            },
+                            success: function(response) {
+                                // Handle success response
+                                if (response.success) {
+                                    console.log(response);
+                                    inputField = `
+                                    <input type="number" value="${response.cart.product_quantity}" 
+                                        name="schedule-buy-quantity " 
+                                        id="schedule-buy-quantity-${Id}" 
+                                        class="form-control quantity-input quantity-display" 
+                                        data-unit-price="${response.cart.product_price}" 
+                                        data-id="${Id}" 
+                                        data-quantity="${response.cart.product_quantity}" 
+                                        min="1">
+                                `;
+                                    $(quantityDisplay).replaceWith($(inputField));
+                                    $('#total-price-' + Id).text(response.cart.product_total_price);
+                                    // // Select the bulk details select
+                                    var scheduleTypeSelect = $('#schedule_type-' + response.id);
+                                    var valueToSelect = response.cart.schedule_type;
+                                    scheduleTypeSelect.val(valueToSelect);
+                                    scheduleTypeSelect.trigger('change');
+
+                                    var scheduleDetailsSelect = $('#schedule-details-' + response
+                                        .id);
+                                    var valueToSelect = response.product_schedule_details.day;
+                                    scheduleDetailsSelect.val(valueToSelect);
+                                    scheduleDetailsSelect.trigger('change');
+                                    $('#schedule-details-container-' + Id).show();
+                                    // Listen for input change on quantity input
+                                    $(document).on('input', `#schedule-buy-quantity-${Id}`,
+                                        function() {
+                                            const newQuantity = $(this).val();
+                                            const unitPrice = $(this).data('unit-price');
+                                            const newTotalPrice = (unitPrice * newQuantity)
+                                                .toFixed(2);
+                                            $('#total-price-' + Id).text(newTotalPrice);
+                                        });
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                // console.error(xhr.responseText);
+                                toastr.error('Failed to find schedule details for product ID: ' +
+                                    productId + '. Please try again.');
+                            }
+                        });
                     } else {
 
                         $.ajax({
@@ -299,6 +364,8 @@
                         $(quantityDisplay).replaceWith(inputField);
                     }
                 });
+
+
                 //sedn ajax request for get bundle detail
                 $('.bulk-option').on('change', function() {
                     let quantity = $(this).val();
