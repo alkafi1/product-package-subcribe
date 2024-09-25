@@ -235,7 +235,8 @@ class ProductController extends Controller
     public function cartShow()
     {
         $products = ProductCart::latest()->get();
-        return view('cart', compact('products'));
+        $total_cart_price = number_format($products->sum('product_total_price'), 2);
+        return view('cart', compact('products', 'total_cart_price'));
     }
     public function cartDelete($id)
     {

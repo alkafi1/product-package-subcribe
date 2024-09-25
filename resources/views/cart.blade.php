@@ -210,11 +210,23 @@
 
                         </div>
                     </div>
-                    <div class="card-footer text-center">
-                        <a href="" class="btn btn-success">
-                            Proceed to Checkout
-                        </a>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <!-- Centered total cart price with styling -->
+                        <div class="text-center w-100">
+                            <h5 class="mb-0 font-weight-bold">
+                                Total Cart Price: 
+                                <span class="text-success">৳{{ number_format($total_cart_price, 2) }}</span>
+                            </h5>
+                        </div>
+                        
+                        <!-- Button aligned to the end -->
+                        <div class="ml-auto">
+                            <a href="" class="btn btn-success">
+                                <i class="fas fa-shopping-cart"></i>Checkout
+                            </a>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -364,7 +376,6 @@
                         $(quantityDisplay).replaceWith(inputField);
                     }
                 });
-
 
                 //sedn ajax request for get bundle detail
                 $('.bulk-option').on('change', function() {
