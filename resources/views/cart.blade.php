@@ -13,8 +13,8 @@
                         <div class="row">
                             @forelse ($products as $product)
                                 <div class="col-md-3 mb-4">
-                                    <form action="" method="POST" class="product-form">
-                                        @csrf
+                                    <form action="" method="POST" class="product-form "
+                                        id="product-cart-{{ $product->id }}">
                                         <div class="card shadow-sm border">
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ $product->productDetails->name }}</h5>
@@ -40,9 +40,9 @@
                                                             data-quantity="{{ $product->product_quantity }}">
                                                     @elseif ($product->purchase_type == 'schedule-buy')
                                                         <input type="number" value="{{ $product->product_quantity }}"
-                                                            name="schedule-buy-quantity quantity-display"
+                                                            name="schedule-buy-quantity "
                                                             id="schedule-buy-quantity-{{ $product->product_id }}"
-                                                            class="form-control quantity-input"
+                                                            class="form-control quantity-input quantity-display"
                                                             data-unit-price="{{ $product->product_price }}"
                                                             data-id="{{ $product->id }}"
                                                             data-quantity="{{ $product->product_quantity }}">
@@ -89,72 +89,75 @@
                                                     </select>
                                                 </p>
 
-                                                {{-- Schedule Type (only for scheduled buys) --}}
-                                                @if ($product->schedule_type)
-                                                    <p class="card-text">
-                                                        <strong>Schedule Type:</strong>
-                                                        <select class="form-select schedule_type" name="schedule_type">
-                                                            <option value="monthly"
-                                                                {{ $product->schedule_type == 'monthly' ? 'selected' : '' }}>
-                                                                Monthly
-                                                            </option>
-                                                            <option value="days"
-                                                                {{ $product->schedule_type == 'days' ? 'selected' : '' }}>
-                                                                Days
-                                                            </option>
-                                                        </select>
-                                                    </p>
-                                                @endif
+
 
                                                 {{-- Bulk Purchase Details --}}
                                                 <!-- Purchase details section (hidden by default) -->
-                                                <div id="bulk-details-container-{{ $product->id }}">
-                                                    @if ($product->purchase_type == 'bulk')
-                                                        <p class="card-text">
-                                                            <strong>Purchase Details:</strong>
-                                                            @php
-                                                                $bundleDetails = json_decode(
-                                                                    $product->productDetails->bundle_details,
-                                                                );
-                                                            @endphp
-                                                            <select name="bulk-details"
-                                                                id="bulk-details-{{ $product->id }}"
-                                                                class="form-select bulk-option"
-                                                                data-id="{{ $product->id }}">
-                                                                @foreach ($bundleDetails as $index => $bundle)
-                                                                    @php
-                                                                        $totalOriginalPrice =
-                                                                            $bundle->product_price * $bundle->quantity;
-                                                                        if ($bundle->type == 'percentage') {
-                                                                            $percentageSaved = $bundle->discount_amount;
-                                                                            $savings =
-                                                                                $totalOriginalPrice -
-                                                                                $bundle->after_discount;
-                                                                        } elseif ($bundle->type == 'fixed') {
-                                                                            $savings =$totalOriginalPrice -
+                                                <div id="bulk-details-container-{{ $product->id }}"
+                                                    style="display: {{ $product->purchase_type != 'bulk' ? 'none' : '' }};">
+                                                    {{-- @if ($product->purchase_type == 'bulk') --}}
+                                                    <p class="card-text">
+                                                        <strong>Purchase Details:</strong>
+                                                        @if ($product->productDetails->is_bundle)
+                                                        @php
+                                                            $bundleDetails = json_decode(
+                                                                $product->productDetails->bundle_details,
+                                                            );
+                                                        @endphp
+                                                        <select name="bulk-details" id="bulk-details-{{ $product->id }}"
+                                                            class="form-select bulk-option" data-id="{{ $product->id }}">
+                                                            @foreach ($bundleDetails as $index => $bundle)
+                                                                @php
+                                                                    $totalOriginalPrice =
+                                                                        $bundle->product_price * $bundle->quantity;
+                                                                    if ($bundle->type == 'percentage') {
+                                                                        $percentageSaved = $bundle->discount_amount;
+                                                                        $savings =
+                                                                            $totalOriginalPrice -
                                                                             $bundle->after_discount;
-                                                                            $percentageSaved = round(
-                                                                                ($savings / $totalOriginalPrice) * 100,
-                                                                            );
-                                                                        }
-                                                                    @endphp
-                                                                    <option value="{{ $bundle->quantity }}"
-                                                                        {{ $product->product_quantity == $bundle->quantity ? 'selected' : '' }}>
-                                                                        Save {{ $percentageSaved }}% - Buy
-                                                                        {{ $bundle->quantity }} for
-                                                                        ৳{{ number_format($bundle->after_discount, 2) }}
-                                                                        (original price
-                                                                        ৳{{ number_format($totalOriginalPrice, 2) }} each,
-                                                                        saving ৳{{ number_format($savings, 2) }})
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </p>
-                                                    @endif
+                                                                    } elseif ($bundle->type == 'fixed') {
+                                                                        $savings =
+                                                                            $totalOriginalPrice -
+                                                                            $bundle->after_discount;
+                                                                        $percentageSaved = round(
+                                                                            ($savings / $totalOriginalPrice) * 100,
+                                                                        );
+                                                                    }
+                                                                @endphp
+                                                                <option value="{{ $bundle->quantity }}"
+                                                                    {{ $product->product_quantity == $bundle->quantity ? 'selected' : '' }}>
+                                                                    Save {{ $percentageSaved }}% - Buy
+                                                                    {{ $bundle->quantity }} for
+                                                                    ৳{{ number_format($bundle->after_discount, 2) }}
+                                                                    (original price
+                                                                    ৳{{ number_format($totalOriginalPrice, 2) }} each,
+                                                                    saving ৳{{ number_format($savings, 2) }})
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @endif
+                                                    </p>
+                                                    {{-- @endif --}}
                                                 </div>
 
-                                                {{-- Schedule Purchase Details --}}
-                                                @if ($product->purchase_type == 'schedule-buy')
+
+                                                {{-- Schedule Type (only for scheduled buys) --}}
+                                                <div id="schedule-details-container-{{ $product->id }}"
+                                                    style="display: {{ $product->schedule_type == null ? 'none' : '' }};">
+                                                    {{-- @if ($product->schedule_type) --}}
+                                                    <p class="card-text">
+                                                        <strong>Schedule Type:</strong>
+                                                        <select class="form-select schedule_type" name="schedule_type"
+                                                            id="schedule_type-{{ $product->id }}">
+                                                            <option
+                                                                value="{{ $product->productDetails->schedule_type == 'monthly' ? 'monthly' : 'days' }}">
+                                                                {{ $product->productDetails->schedule_type == 'monthly' ? 'Monthly' : 'Days' }}
+                                                            </option>
+                                                        </select>
+                                                    </p>
+                                                    {{-- @endif --}}
+                                                    {{-- Schedule Purchase Details --}}
+                                                    {{-- @if ($product->purchase_type == 'schedule-buy') --}}
                                                     <p class="card-text">
                                                         <strong>Purchase Details:</strong>
                                                         <select name="schedule-details"
@@ -176,23 +179,32 @@
                                                             @endif
                                                         </select>
                                                     </p>
-                                                @endif
+                                                    {{-- @endif --}}
+                                                </div>
                                             </div>
 
                                             {{-- Card Footer with Action Buttons --}}
                                             <div class="card-footer d-flex justify-content-between">
+                                                <!-- View Product -->
                                                 <a href="{{ route('products.show', $product->product_id) }}"
-                                                    class="bg-light">
+                                                    class="bg-light p-2 rounded" title="View Product">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="" class="bg-light">
+
+                                                <!-- Update Product -->
+                                                <a href="javascript:void(0)" class="bg-light p-2 rounded update-cart"
+                                                    title="Update Cart" data-id="{{ $product->id }}">
                                                     <i class="fas fa-wrench text-success"></i>
                                                 </a>
+
+                                                <!-- Delete Product -->
                                                 <a href="{{ route('products.cart.delete', $product->id) }}"
-                                                    class="bg-light">
+                                                    class="bg-light p-2 rounded" title="Delete Product"
+                                                    onclick="return confirm('Are you sure you want to delete this product?');">
                                                     <i class="fas fa-trash-alt text-danger"></i>
                                                 </a>
                                             </div>
+
                                         </div>
                                     </form>
                                 </div>
@@ -203,11 +215,23 @@
 
                         </div>
                     </div>
-                    <div class="card-footer text-center">
-                        <a href="" class="btn btn-success">
-                            Proceed to Checkout
-                        </a>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <!-- Centered total cart price with styling -->
+                        <div class="text-center w-100">
+                            <h5 class="mb-0 font-weight-bold">
+                                Total Cart Price:
+                                <span class="text-success" >৳</span> <span class="text-success" id="total_cart_price">{{ $total_cart_price }}</span>
+                            </h5>
+                        </div>
+
+                        <!-- Button aligned to the end -->
+                        <div class="ml-auto">
+                            <a href="" class="btn btn-success">
+                                <i class="fas fa-shopping-cart"></i>Checkout
+                            </a>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -235,7 +259,7 @@
 
                     let inputField;
 
-                    if (selectedValue === 'buy-now' || selectedValue === 'schedule-buy') {
+                    if (selectedValue === 'buy-now') {
                         // Create an input field for 'buy-now' or 'schedule-buy'
                         inputField = `
                             <input type="number" value="1" 
@@ -260,7 +284,67 @@
 
                         // Hide bulk details
                         $('#bulk-details-container-' + Id).hide();
+                        $('#schedule-details-container-' + Id).hide();
 
+                    } else if (selectedValue === 'schedule-buy') {
+
+                        $.ajax({
+                            url: '{{ route('cart.schedule.details') }}', // The URL to send the request to
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}', // Include the CSRF token for security
+                                id: Id,
+                            },
+                            success: function(response) {
+                                $('#bulk-details-container-' + Id).hide();
+                                if (response.success) {
+                                    console.log(response);
+                                    inputField = `
+                                    <input type="number" value="${response.cart.product_quantity}" 
+                                        name="schedule-buy-quantity " 
+                                        id="schedule-buy-quantity-${Id}" 
+                                        class="form-control quantity-input quantity-display" 
+                                        data-unit-price="${response.cart.product_price}" 
+                                        data-id="${Id}" 
+                                        data-quantity="${response.cart.product_quantity}" 
+                                        min="1">
+                                `;
+                                    $(quantityDisplay).replaceWith($(inputField));
+                                    $('#total-price-' + Id).text(response.cart.product_total_price);
+                                    // // Select the bulk details select
+                                    if (response.cart.schedule_type != null) {
+                                        var scheduleTypeSelect = $('#schedule_type-' + response.id);
+                                        var valueToSelect = response.cart.schedule_type;
+                                        scheduleTypeSelect.val(valueToSelect);
+                                        scheduleTypeSelect.trigger('change');
+
+                                        var scheduleDetailsSelect = $('#schedule-details-' +
+                                            response
+                                            .id);
+                                        var valueToSelect = response.product_schedule_details.day;
+                                        scheduleDetailsSelect.val(valueToSelect);
+                                        scheduleDetailsSelect.trigger('change');
+                                    }
+                                    $('#schedule-details-container-' + Id).show();
+                                    // Listen for input change on quantity input
+                                    $(document).on('input', `#schedule-buy-quantity-${Id}`,
+                                        function() {
+                                            const newQuantity = $(this).val();
+                                            const unitPrice = $(this).data('unit-price');
+                                            const newTotalPrice = (unitPrice * newQuantity)
+                                                .toFixed(2);
+                                            $('#total-price-' + Id).text(newTotalPrice);
+                                        });
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                // console.error(xhr.responseText);
+                                // toastr.error('Failed to find schedule details for product ID: ' +
+                                //     productId + '. Please try again.');
+                            }
+                        });
                     } else {
 
                         $.ajax({
@@ -271,16 +355,16 @@
                                 id: Id,
                             },
                             success: function(response) {
-
-                                // Handle success response
+                                $('#schedule-details-container-' + Id).hide();
                                 if (response.success) {
                                     $(quantityDisplay).replaceWith($(response.inputField));
                                     $('#total-price-' + Id).text(response.totalPrice);
-                                    // Select the bulk details select
-                                    var bulkDetailsSelect = $('#bulk-details-' + response.id);
-                                    var valueToSelect = response.quantity;
-                                    bulkDetailsSelect.val(valueToSelect);
-                                    bulkDetailsSelect.trigger('change');
+                                    if (response.find) {
+                                        var bulkDetailsSelect = $('#bulk-details-' + response.id);
+                                        var valueToSelect = response.quantity;
+                                        bulkDetailsSelect.val(valueToSelect);
+                                        bulkDetailsSelect.trigger('change');
+                                    }
                                     $('#bulk-details-container-' + Id).show();
 
                                 } else {
@@ -288,9 +372,9 @@
                                 }
                             },
                             error: function(xhr, status, error) {
-                                // console.error(xhr.responseText);
-                                toastr.error('Failed to update bundle details for product ID: ' +
-                                    productId + '. Please try again.');
+                                console.error(xhr.responseText);
+                                // toastr.error('Failed to update bundle details for product ID: ' +
+                                //     productId + '. Please try again.');
                             }
                         });
                     }
@@ -299,6 +383,7 @@
                         $(quantityDisplay).replaceWith(inputField);
                     }
                 });
+
                 //sedn ajax request for get bundle detail
                 $('.bulk-option').on('change', function() {
                     let quantity = $(this).val();
@@ -334,6 +419,47 @@
                         }
                     });
                 });
+                $('.update-cart').on('click', function(e) {
+                    e.preventDefault();
+                    var Id = $(this).data('id');
+                    let form = $('#product-cart-' + Id)[0];
+
+                    // Create a FormData object
+                    let formData = new FormData(form);
+                    formData.append('id', Id);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    // You can also make an AJAX request here to update the cart if needed
+                    $.ajax({
+                        url: '{{ route('products.cart.update') }}',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            console.log(response);
+                            if (response.success) {
+                                $('#total_cart_price').text(response.total_cart_price);
+                                toastr.success(response.message);
+                            } else {
+                                $.each(response.errors, function(key, errorMessages) {
+                                    $.each(errorMessages, function(index, message) {
+                                        toastr.error(message);
+                                    });
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            var errors = xhr.responseJSON.errors;
+                            // Iterate through each error and display it
+                            $.each(errors, function(key, value) {
+                                console.log(key, value);
+                                toastr.error(value); // Displaying each error message
+                            });
+                        }
+                    });
+                });
+
             });
         </script>
     @endpush
