@@ -385,12 +385,29 @@ class ProductController extends Controller
                 'totalPrice' => $afterDiscount,
                 'quantity' => $quantity,
                 'id' => $request->id,
-
+                'find' => true,
             ]);
         } else {
+            $productbundleDetails=json_decode($cart->productDetails->bundle_details, true);
+            $quantity = $productbundleDetails[0]['quantity'];  // Adjust field names as per your structure
+            $afterDiscount = number_format($productbundleDetails[0]['after_discount'], 2);  // Ensure it's formatted properly
+            $productPrice = number_format($productbundleDetails[0]['product_price'], 2);
+            
+            $inputField = "
+                <span class=\"quantity-input quantity-display bulk-now-quantity-{$cart->id}\" 
+                    data-unit-price=\"{$productPrice}\" 
+                    data-id=\"{$cart->id}\" 
+                    data-quantity=\"{$quantity}\">
+                    {$quantity}
+                </span>
+            ";
             return response()->json([
-                'success' => false,
-                'message' => 'Bundle details not found.',
+                'success' => true,
+                'inputField' => $inputField,
+                'totalPrice' => $afterDiscount,
+                'quantity' => $quantity,
+                'id' => $request->id,
+                'find' => false,
             ]);
         }
     }

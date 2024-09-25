@@ -13,7 +13,8 @@
                         <div class="row">
                             @forelse ($products as $product)
                                 <div class="col-md-3 mb-4">
-                                    <form action="" method="POST" class="product-form">
+                                    <form action="{{ route('products.cart.update', $product->id) }}" method="POST"
+                                        class="product-form " id="product-cart-{{ $product->id }}">
                                         @csrf
                                         <div class="card shadow-sm border">
                                             <div class="card-body">
@@ -93,113 +94,117 @@
 
                                                 {{-- Bulk Purchase Details --}}
                                                 <!-- Purchase details section (hidden by default) -->
-                                                <div id="bulk-details-container-{{ $product->id }}">
-                                                    @if ($product->purchase_type == 'bulk')
-                                                        <p class="card-text">
-                                                            <strong>Purchase Details:</strong>
-                                                            @php
-                                                                $bundleDetails = json_decode(
-                                                                    $product->productDetails->bundle_details,
-                                                                );
-                                                            @endphp
-                                                            <select name="bulk-details"
-                                                                id="bulk-details-{{ $product->id }}"
-                                                                class="form-select bulk-option"
-                                                                data-id="{{ $product->id }}">
-                                                                @foreach ($bundleDetails as $index => $bundle)
-                                                                    @php
-                                                                        $totalOriginalPrice =
-                                                                            $bundle->product_price * $bundle->quantity;
-                                                                        if ($bundle->type == 'percentage') {
-                                                                            $percentageSaved = $bundle->discount_amount;
-                                                                            $savings =
-                                                                                $totalOriginalPrice -
-                                                                                $bundle->after_discount;
-                                                                        } elseif ($bundle->type == 'fixed') {
-                                                                            $savings =
-                                                                                $totalOriginalPrice -
-                                                                                $bundle->after_discount;
-                                                                            $percentageSaved = round(
-                                                                                ($savings / $totalOriginalPrice) * 100,
-                                                                            );
-                                                                        }
-                                                                    @endphp
-                                                                    <option value="{{ $bundle->quantity }}"
-                                                                        {{ $product->product_quantity == $bundle->quantity ? 'selected' : '' }}>
-                                                                        Save {{ $percentageSaved }}% - Buy
-                                                                        {{ $bundle->quantity }} for
-                                                                        ৳{{ number_format($bundle->after_discount, 2) }}
-                                                                        (original price
-                                                                        ৳{{ number_format($totalOriginalPrice, 2) }} each,
-                                                                        saving ৳{{ number_format($savings, 2) }})
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </p>
-                                                    @endif
+                                                <div id="bulk-details-container-{{ $product->id }}"
+                                                    style="display: {{ $product->purchase_type != 'bulk' ? 'none' : '' }};">
+                                                    {{-- @if ($product->purchase_type == 'bulk') --}}
+                                                    <p class="card-text">
+                                                        <strong>Purchase Details:</strong>
+                                                        @php
+                                                            $bundleDetails = json_decode(
+                                                                $product->productDetails->bundle_details,
+                                                            );
+                                                        @endphp
+                                                        <select name="bulk-details" id="bulk-details-{{ $product->id }}"
+                                                            class="form-select bulk-option" data-id="{{ $product->id }}">
+                                                            @foreach ($bundleDetails as $index => $bundle)
+                                                                @php
+                                                                    $totalOriginalPrice =
+                                                                        $bundle->product_price * $bundle->quantity;
+                                                                    if ($bundle->type == 'percentage') {
+                                                                        $percentageSaved = $bundle->discount_amount;
+                                                                        $savings =
+                                                                            $totalOriginalPrice -
+                                                                            $bundle->after_discount;
+                                                                    } elseif ($bundle->type == 'fixed') {
+                                                                        $savings =
+                                                                            $totalOriginalPrice -
+                                                                            $bundle->after_discount;
+                                                                        $percentageSaved = round(
+                                                                            ($savings / $totalOriginalPrice) * 100,
+                                                                        );
+                                                                    }
+                                                                @endphp
+                                                                <option value="{{ $bundle->quantity }}"
+                                                                    {{ $product->product_quantity == $bundle->quantity ? 'selected' : '' }}>
+                                                                    Save {{ $percentageSaved }}% - Buy
+                                                                    {{ $bundle->quantity }} for
+                                                                    ৳{{ number_format($bundle->after_discount, 2) }}
+                                                                    (original price
+                                                                    ৳{{ number_format($totalOriginalPrice, 2) }} each,
+                                                                    saving ৳{{ number_format($savings, 2) }})
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </p>
+                                                    {{-- @endif --}}
                                                 </div>
 
 
                                                 {{-- Schedule Type (only for scheduled buys) --}}
-                                                <div id="schedule-details-container-{{ $product->id }}">
-                                                    @if ($product->schedule_type)
-                                                        <p class="card-text">
-                                                            <strong>Schedule Type:</strong>
-                                                            <select class="form-select schedule_type" name="schedule_type"
-                                                                id="schedule_type-{{ $product->id }}">
-                                                                <option value="monthly"
-                                                                    {{ $product->schedule_type == 'monthly' ? 'selected' : '' }}>
-                                                                    Monthly
-                                                                </option>
-                                                                <option value="days"
-                                                                    {{ $product->schedule_type == 'days' ? 'selected' : '' }}>
-                                                                    Days
-                                                                </option>
-                                                            </select>
-                                                        </p>
-                                                    @endif
+                                                {{ $product->schedule_type }}
+                                                <div id="schedule-details-container-{{ $product->id }}"
+                                                    style="display: {{ $product->schedule_type == null ? 'none' : '' }};">
+                                                    {{-- @if ($product->schedule_type) --}}
+                                                    <p class="card-text">
+                                                        <strong>Schedule Type:</strong>
+                                                        <select class="form-select schedule_type" name="schedule_type"
+                                                            id="schedule_type-{{ $product->id }}" >
+                                                            <option value="{{ $product->schedule_type == 'monthly' ? 'monthly' : 'days' }}"
+                                                                >
+                                                                {{ $product->schedule_type == 'monthly' ? 'Monthly' : 'Days' }}
+                                                            </option>
+                                                        </select>
+                                                    </p>
+                                                    {{-- @endif --}}
                                                     {{-- Schedule Purchase Details --}}
-                                                    @if ($product->purchase_type == 'schedule-buy')
-                                                        <p class="card-text">
-                                                            <strong>Purchase Details:</strong>
-                                                            <select name="schedule-details"
-                                                                id="schedule-details-{{ $product->id }}"
-                                                                class="form-select">
-                                                                @if ($product->productDetails->schedule_type === 'monthly')
-                                                                    @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
-                                                                        <option value="{{ $schedule['interval'] }}">
-                                                                            Every {{ $schedule['interval'] }} month (Day
-                                                                            {{ $schedule['day'] }})
-                                                                        </option>
-                                                                    @endforeach
-                                                                @elseif ($product->productDetails->schedule_type === 'days')
-                                                                    @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
-                                                                        <option value="{{ $schedule['interval'] }}">
-                                                                            Every {{ $schedule['interval'] }} day(s) (Day
-                                                                            {{ $schedule['day'] }})
-                                                                        </option>
-                                                                    @endforeach
-                                                                @endif
-                                                            </select>
-                                                        </p>
-                                                    @endif
+                                                    {{-- @if ($product->purchase_type == 'schedule-buy') --}}
+                                                    <p class="card-text">
+                                                        <strong>Purchase Details:</strong>
+                                                        <select name="schedule-details"
+                                                            id="schedule-details-{{ $product->id }}" class="form-select">
+                                                            @if ($product->productDetails->schedule_type === 'monthly')
+                                                                @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
+                                                                    <option value="{{ $schedule['interval'] }}">
+                                                                        Every {{ $schedule['interval'] }} month (Day
+                                                                        {{ $schedule['day'] }})
+                                                                    </option>
+                                                                @endforeach
+                                                            @elseif ($product->productDetails->schedule_type === 'days')
+                                                                @foreach (json_decode($product->productDetails->schedule, true) as $schedule)
+                                                                    <option value="{{ $schedule['interval'] }}">
+                                                                        Every {{ $schedule['interval'] }} day(s) (Day
+                                                                        {{ $schedule['day'] }})
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                    </p>
+                                                    {{-- @endif --}}
                                                 </div>
                                             </div>
 
                                             {{-- Card Footer with Action Buttons --}}
                                             <div class="card-footer d-flex justify-content-between">
+                                                <!-- View Product -->
                                                 <a href="{{ route('products.show', $product->product_id) }}"
-                                                    class="bg-light">
+                                                    class="bg-light p-2 rounded" title="View Product">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="" class="bg-light">
+
+                                                <!-- Update Product -->
+                                                <a href="javascript:void(0)" class="bg-light p-2 rounded update-cart"
+                                                    title="Update Cart" data-id="{{ $product->id }}">
                                                     <i class="fas fa-wrench text-success"></i>
                                                 </a>
+
+                                                <!-- Delete Product -->
                                                 <a href="{{ route('products.cart.delete', $product->id) }}"
-                                                    class="bg-light">
+                                                    class="bg-light p-2 rounded" title="Delete Product"
+                                                    onclick="return confirm('Are you sure you want to delete this product?');">
                                                     <i class="fas fa-trash-alt text-danger"></i>
                                                 </a>
                                             </div>
+
                                         </div>
                                     </form>
                                 </div>
@@ -214,11 +219,11 @@
                         <!-- Centered total cart price with styling -->
                         <div class="text-center w-100">
                             <h5 class="mb-0 font-weight-bold">
-                                Total Cart Price: 
-                                <span class="text-success">৳{{ number_format($total_cart_price, 2) }}</span>
+                                Total Cart Price:
+                                <span class="text-success">৳{{ $total_cart_price }}</span>
                             </h5>
                         </div>
-                        
+
                         <!-- Button aligned to the end -->
                         <div class="ml-auto">
                             <a href="" class="btn btn-success">
@@ -226,7 +231,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -292,7 +297,7 @@
                                 id: Id,
                             },
                             success: function(response) {
-                                // Handle success response
+                                $('#bulk-details-container-' + Id).hide();
                                 if (response.success) {
                                     console.log(response);
                                     inputField = `
@@ -308,16 +313,19 @@
                                     $(quantityDisplay).replaceWith($(inputField));
                                     $('#total-price-' + Id).text(response.cart.product_total_price);
                                     // // Select the bulk details select
-                                    var scheduleTypeSelect = $('#schedule_type-' + response.id);
-                                    var valueToSelect = response.cart.schedule_type;
-                                    scheduleTypeSelect.val(valueToSelect);
-                                    scheduleTypeSelect.trigger('change');
+                                    if (response.cart.schedule_type != null) {
+                                        var scheduleTypeSelect = $('#schedule_type-' + response.id);
+                                        var valueToSelect = response.cart.schedule_type;
+                                        scheduleTypeSelect.val(valueToSelect);
+                                        scheduleTypeSelect.trigger('change');
 
-                                    var scheduleDetailsSelect = $('#schedule-details-' + response
-                                        .id);
-                                    var valueToSelect = response.product_schedule_details.day;
-                                    scheduleDetailsSelect.val(valueToSelect);
-                                    scheduleDetailsSelect.trigger('change');
+                                        var scheduleDetailsSelect = $('#schedule-details-' +
+                                            response
+                                            .id);
+                                        var valueToSelect = response.product_schedule_details.day;
+                                        scheduleDetailsSelect.val(valueToSelect);
+                                        scheduleDetailsSelect.trigger('change');
+                                    }
                                     $('#schedule-details-container-' + Id).show();
                                     // Listen for input change on quantity input
                                     $(document).on('input', `#schedule-buy-quantity-${Id}`,
@@ -348,16 +356,16 @@
                                 id: Id,
                             },
                             success: function(response) {
-
-                                // Handle success response
+                                $('#schedule-details-container-' + Id).hide();
                                 if (response.success) {
                                     $(quantityDisplay).replaceWith($(response.inputField));
                                     $('#total-price-' + Id).text(response.totalPrice);
-                                    // Select the bulk details select
-                                    var bulkDetailsSelect = $('#bulk-details-' + response.id);
-                                    var valueToSelect = response.quantity;
-                                    bulkDetailsSelect.val(valueToSelect);
-                                    bulkDetailsSelect.trigger('change');
+                                    if (response.find) {
+                                        var bulkDetailsSelect = $('#bulk-details-' + response.id);
+                                        var valueToSelect = response.quantity;
+                                        bulkDetailsSelect.val(valueToSelect);
+                                        bulkDetailsSelect.trigger('change');
+                                    }
                                     $('#bulk-details-container-' + Id).show();
 
                                 } else {
@@ -411,6 +419,39 @@
                                 '. Please try again.');
                         }
                     });
+                });
+
+                // update cart prodcut ajax
+                $(document).on('click', '.update-cart', function() {
+                    // Get the data-id attribute from the clicked element
+                    var Id = $(this).data('id');
+
+                    // Alert the user with the product ID
+                    alert('Cart ID: ' + Id);
+
+                    // Get the form data associated with the product
+                    var formId = 'product-cart-' + productId; // Assuming your form ID follows this pattern
+                    var formData = $('#' + formId).serialize(); // Serialize form data
+
+                    // Example of how to do something with the form data
+                    console.log('Form Data:', formData);
+
+                    // You can also make an AJAX request here to update the cart if needed
+                    // $.ajax({
+                    //     url: 'your-update-url', // Update with the actual URL for updating the cart
+                    //     type: 'POST',
+                    //     data: {
+                    //         _token: '{{ csrf_token() }}', // Include CSRF token
+                    //         productId: productId,
+                    //         formData: formData
+                    //     },
+                    //     success: function(response) {
+                    //         // Handle success response
+                    //     },
+                    //     error: function(xhr, status, error) {
+                    //         // Handle error response
+                    //     }
+                    // });
                 });
             });
         </script>
