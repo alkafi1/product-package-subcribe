@@ -313,16 +313,14 @@
                                     $('#total-price-' + Id).text(response.cart.product_total_price);
                                     // // Select the bulk details select
                                     if (response.cart.schedule_type != null) {
+
                                         var scheduleTypeSelect = $('#schedule_type-' + response.id);
                                         var valueToSelect = response.cart.schedule_type;
                                         scheduleTypeSelect.val(valueToSelect);
                                         scheduleTypeSelect.trigger('change');
-
-                                        var scheduleDetailsSelect = $('#schedule-details-' +
-                                            response
-                                            .id);
-                                        var valueToSelect = response.product_schedule_details.day;
-                                        scheduleDetailsSelect.val(valueToSelect);
+                                        var scheduleDetailsSelect = $('#schedule-details-' +response.id);
+                                        var valueToSelect1 = response.product_schedule_details[0].interval;
+                                        scheduleDetailsSelect.val(valueToSelect1);
                                         scheduleDetailsSelect.trigger('change');
                                     }
                                     $('#schedule-details-container-' + Id).show();
